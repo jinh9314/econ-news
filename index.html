@@ -23,14 +23,15 @@
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --bg: #0e141a;
-    --surface: #16202a;
-    --tint: #1c2833;
-    --fg: #e5ebf1;
-    --muted: #93a1af;
-    --line: #27333f;
-    --accent: #5fc3c9;
-    --blue: #7db0ff;
+    --bg: #000000;
+    --surface: #121212;
+    --tint: #1c1c1c;
+    --fg: #f2f2f2;
+    --muted: #a6a6a6;
+    --line: #333333;
+    --accent: #ffffff;
+    --blue: #ffffff;
+    --mark: #4a4a4a;
   }
 }
 * { box-sizing: border-box; }
@@ -50,6 +51,14 @@ body {
 .date { margin: 0 0 10px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
 h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
 .lede { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.7; max-width: 38em; }
+.nav { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 14px 0 0; font-size: 14px; }
+.nav a, .src a { color: var(--accent); text-underline-offset: 3px; }
+.filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 4px 14px; }
+.filter button {
+  font: 500 13px/1 var(--font-body); color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer;
+}
+.filter button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
 .sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px 24px; }
 .story {
   display: grid;
@@ -59,11 +68,13 @@ h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; lett
   border-top: 1px solid var(--line);
 }
 .story:first-child { border-top: 0; }
+.story[hidden] { display: none; }
 .story.solo { grid-template-columns: minmax(0, 1fr); }
 .main, .terms { min-width: 0; }
-.meta { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
 .tag { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); }
-.when { font: 400 12px/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
+.chip-tag { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+.when { margin-left: auto; font: 400 12px/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
 h2 { margin: 10px 0 10px; font-size: 19px; line-height: 1.45; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
 h2 a { color: inherit; text-decoration: none; }
 h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -71,14 +82,23 @@ h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .pts li { margin: 0 0 8px; font-size: 15px; line-height: 1.8; }
 .pts li::marker { color: var(--muted); }
 .t { color: var(--blue); font-weight: 700; }
+.why { margin: 12px 0 0; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--tint); border-radius: 0 8px 8px 0; max-width: 40em; }
+.why p { margin: 0; font-size: 14.5px; line-height: 1.75; }
+.why .why-h { margin-bottom: 2px; font-size: 12.5px; font-weight: 700; color: var(--accent); }
 .src { margin: 12px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
-.src a { color: var(--accent); text-underline-offset: 3px; }
 .terms { align-self: start; background: var(--tint); border-radius: 8px; padding: 14px 16px 6px; }
 .terms-h { margin: 0 0 10px; font: 500 12px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
 .terms dl { margin: 0; }
 .terms dt { font-size: 14px; font-weight: 700; color: var(--blue); }
 .terms dd { margin: 2px 0 12px; font-size: 14px; line-height: 1.7; }
-a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.empty { margin: 0; padding: 24px 0; color: var(--muted); font-size: 14px; }
+.month { margin: 0; padding: 22px 0 6px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); border-top: 1px solid var(--line); }
+.month:first-child { border-top: 0; }
+.day { padding: 10px 0 14px; }
+.day h3 { margin: 0 0 4px; font-size: 16px; }
+.day h3 a { color: var(--accent); text-underline-offset: 3px; }
+.day ul { margin: 0; padding-left: 1.1em; color: var(--muted); font-size: 14px; line-height: 1.75; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .foot { margin: 18px 4px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 @media (max-width: 720px) {
   .story { grid-template-columns: minmax(0, 1fr); }
@@ -93,18 +113,63 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
 <body>
 <div class="wrap">
   <header class="head">
-    <p class="date">갱신 2026.11.24 TUE 17:35</p>
+    <p class="date">갱신 2026.11.24 TUE 18:15</p>
     <h1>경제뉴스 브리핑</h1>
     <p class="lede">주요 언론사의 금융경제 기사를 매일 아침 골라 정리합니다. 파란색으로 표시된 말은 기사 옆에서 쉽게 풀어 드립니다.</p>
+    <nav class="nav"><a href="archive/index.html">지난 브리핑 보기 →</a></nav>
   </header>
+  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="금리" aria-pressed="false">금리</button><button type="button" data-tag="증시" aria-pressed="false">증시</button><button type="button" data-tag="가상자산" aria-pressed="false">가상자산</button><button type="button" data-tag="금융" aria-pressed="false">금융</button></div>
   <main class="sheet">
-    <article class="story">
+    <article class="story" data-tags="가상자산">
       <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 17:02</span></div>
-        <h2><a href="https://www.yna.co.kr/view/AKR20261124153751008" target="_blank" rel="noopener"><span class="t">국고채</span> 금리 혼조세…<span class="t">코스피</span> 상승 속 외인 선물 매수(종합)</a></h2>
+        <div class="meta"><span class="tag">한국경제</span><span class="chip-tag">가상자산</span><span class="when">11.24 17:42</span></div>
+        <h2><a href="https://www.hankyung.com/article/2026112477271" target="_blank" rel="noopener">국내서 &#x27;코인 발행&#x27; 길 열려…<span class="t">가상자산</span> 전문 IB·운용사도 나온다</a></h2>
+        <ul class="pts">
+          <li>국내서 &#x27;코인 발행&#x27; 길 열려…가상자산 전문 IB·운용사도 나온다 Google 검색에서 한국경제 기사를 더 자주 볼 수 있습니다.</li>
+          <li>특정 주주의 영향력이 과도하게 커지는 것을 막기 위해 단일 주주와 <span class="t">특수관계인</span>의 거래소 지분 보유 한도는 원칙적으로 20%로 제한한다.</li>
+          <li>2021년 가상자산사업자 신고제를 도입한 데 이어 2024년에는 가상자산이용자보호법 시행으로 규제를 강화했다.</li>
+          <li>4대 <span class="t">금융지주</span> 회장, 임추위서 2~3명만 반대해도 연임 못한다 앞으로 4대 금융지주 회장은 임원후보추천위원회(임추위)에서 두세 명만 반대해도 연임하기 어려워진다.</li>
+        </ul>
+        <p class="src">한국경제 11.24 17:42 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.hankyung.com/article/2026112477271" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
+      </div>
+      <aside class="terms" aria-label="용어 풀이">
+        <p class="terms-h">용어 풀이</p>
+        <dl>
+          <dt>가상통화</dt>
+          <dd>실물 없이 전자적으로만 존재하며 인터넷에서 거래되는 화폐 성격의 자산입니다. 비트코인이 대표적입니다.</dd>
+          <dt>동일인/특수관계인</dt>
+          <dd>동일인은 기업집단을 사실상 지배하는 사람을 뜻하고, 특수관계인은 그와 친족이나 계열회사 등으로 이어진 사람과 회사를 가리킵니다.</dd>
+          <dt>금융지주회사</dt>
+          <dd>은행, 증권, 보험 같은 여러 금융회사를 자회사로 거느리며 경영을 총괄하는 모회사를 말합니다.</dd>
+        </dl>
+      </aside>
+    </article>
+    <article class="story" data-tags="증시">
+      <div class="main">
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">증시</span><span class="when">11.24 17:04</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124158000008" target="_blank" rel="noopener">에코프로비엠 &quot;종속회사 에코프로글로벌 주식 6천222억원에 추가취득&quot;</a></h2>
+        <ul class="pts">
+          <li><span class="t">코스닥</span> 상장사 에코프로비엠[247540]은 투자업 종속회사(ECOPRO GLOBAL INVESTMENT PTE.)의 주식 5억9천675만130주를 약 6천222억원에 추가 취득한다고 24일 공시했다.</li>
+          <li>주식 취득 뒤 지분율은 100%가 된다.</li>
+          <li>주식 취득 예정일은 내년 6월 30일이다.</li>
+        </ul>
+        <p class="src">연합뉴스 11.24 17:04 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.yna.co.kr/view/AKR20261124158000008" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
+      </div>
+      <aside class="terms" aria-label="용어 풀이">
+        <p class="terms-h">용어 풀이</p>
+        <dl>
+          <dt>주가지수</dt>
+          <dd>여러 종목 주가를 하나로 묶어 시장 전체의 흐름을 보여주는 수치입니다. 코스피가 대표적입니다.</dd>
+        </dl>
+      </aside>
+    </article>
+    <article class="story" data-tags="금리|증시">
+      <div class="main">
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">금리</span><span class="chip-tag">증시</span><span class="when">11.24 17:02</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124153751008" target="_blank" rel="noopener"><span class="t">국고채</span> 금리 혼조세…코스피 상승 속 외인 선물 매수(종합)</a></h2>
         <ul class="pts">
           <li>24일 국고채 금리는 만기별로 엇갈린 움직임을 보이며 혼조세로 마감했다.</li>
-          <li>간밤 뉴욕 증시 반등에 코스피 지수가 5,000선을 회복하는 등 위험 선호 심리가 일부 살아난 가운데 이번 주 <span class="t">한국은행</span>의 <span class="t">금융통화위원회</span>에서 기준금리 인상이 전망되면서 단기물 금리는 상승했다.</li>
+          <li>간밤 뉴욕 증시 반등에 코스피 지수가 5,000선을 회복하는 등 위험 선호 심리가 일부 살아난 가운데 이번 주 <span class="t">한국은행</span>의 <span class="t">금융통화위원회</span>에서 <span class="t">기준금리</span> 인상이 전망되면서 단기물 금리는 상승했다.</li>
           <li>간밤 젠슨 황 엔비디아 최고경영자(CEO) 복귀 소식에 코스피 지수가 5,000선을 회복하는 등 강세를 보이자 이날 국고채 금리는 상승세로 출발했다.</li>
         </ul>
         <p class="src">연합뉴스 11.24 17:02 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.yna.co.kr/view/AKR20261124153751008" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
@@ -114,37 +179,18 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
         <dl>
           <dt>국채</dt>
           <dd>정부가 필요한 돈을 마련하려고 발행하는 채권입니다. 안전한 자산으로 여겨져 금리의 기준이 됩니다.</dd>
-          <dt>주가지수</dt>
-          <dd>여러 종목 주가를 하나로 묶어 시장 전체의 흐름을 보여주는 수치입니다. 코스피가 대표적입니다.</dd>
           <dt>한국은행</dt>
           <dd>우리나라의 중앙은행입니다. 기준금리를 정하고 화폐를 발행하며 물가와 금융의 안정을 지키는 일을 맡습니다.</dd>
           <dt>금융통화위원회</dt>
           <dd>한국은행에서 기준금리를 비롯한 통화정책의 중요한 사항을 결정하는 최고 의사결정 기구입니다.</dd>
+          <dt>기준금리</dt>
+          <dd>중앙은행이 정하는 정책 금리로, 시중 대출 금리와 예금 금리를 비롯한 여러 금리의 기준이 됩니다.</dd>
         </dl>
       </aside>
     </article>
-    <article class="story">
+    <article class="story" data-tags="금리">
       <div class="main">
-        <div class="meta"><span class="tag">한국경제</span><span class="when">11.24 17:00</span></div>
-        <h2><a href="https://www.hankyung.com/article/202611246927i" target="_blank" rel="noopener">&#x27;AI <span class="t">중앙은행</span>&#x27; 된 엔비디아…복귀한 젠슨 황, 오하이오서 첫 시험대 [김주완의 글로벌머니 X파일]</a></h2>
-        <ul class="pts">
-          <li>Google 검색에서 한국경제 기사를 더 자주 볼 수 있습니다.</li>
-          <li>엔비디아가 오픈AI의 오하이오 데이터센터 임대와 관련해 최대 1,050억 달러 규모의 잔존가치 보증을 제공하면서 AI 생태계의 인프라 자금 조달을 뒷받침하는 &#x27;AI 중앙은행&#x27;으로서의 지원 전략이 본격적인 시험대에 올랐습니다.</li>
-          <li>젠슨 황 최고경영자(CEO)의 주도로 미국 인공지능(AI) 생태계의 자금 조달을 뒷받침하며 ‘AI 중앙은행’으로 불려온 엔비디아의 지원 전략이 오하이오 데이터센터의 추가 보증 여부를 통해 시험대에 오른다.</li>
-        </ul>
-        <p class="src">한국경제 11.24 17:00 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.hankyung.com/article/202611246927i" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
-      </div>
-      <aside class="terms" aria-label="용어 풀이">
-        <p class="terms-h">용어 풀이</p>
-        <dl>
-          <dt>중앙은행</dt>
-          <dd>한 나라의 화폐를 발행하고 금리와 통화량을 조절하며 금융 안정을 책임지는 은행입니다. 우리나라는 한국은행입니다.</dd>
-        </dl>
-      </aside>
-    </article>
-    <article class="story">
-      <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 16:41</span></div>
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">금리</span><span class="when">11.24 16:41</span></div>
         <h2><a href="https://www.yna.co.kr/view/AKR20261124153700008" target="_blank" rel="noopener">국고채 금리 대체로 하락…3년물 연 3.640%</a></h2>
         <ul class="pts">
           <li>이날 서울 <span class="t">채권시장</span>에서 3년 만기 국고채 금리는 전 거래일보다 1.7bp(1bp=0.01%포인트) 오른 연 3.640%에 장을 마쳤다.</li>
@@ -161,9 +207,9 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
         </dl>
       </aside>
     </article>
-    <article class="story solo">
+    <article class="story solo" data-tags="금융|증시">
       <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 16:31</span></div>
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">금융</span><span class="chip-tag">증시</span><span class="when">11.24 16:31</span></div>
         <h2><a href="https://www.yna.co.kr/view/AKR20261124151500008" target="_blank" rel="noopener">다올투자증권 &quot;계열사 다올저축은행 주식 222억원에 추가취득&quot;</a></h2>
         <ul class="pts">
           <li>코스피 상장사 다올투자증권[030210]은 상호저축은행업 계열사 다올저축은행의 주식 280만4천346주를 약 222억원에 추가 취득한다고 24일 공시했다.</li>
@@ -173,20 +219,28 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
         <p class="src">연합뉴스 11.24 16:31 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.yna.co.kr/view/AKR20261124151500008" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
       </div>
     </article>
-    <article class="story solo">
-      <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 16:12</span></div>
-        <h2><a href="https://www.yna.co.kr/view/AKR20261124144600002" target="_blank" rel="noopener">금융위 &quot;여전업, 디지털자산·AI 활용해야…새 결제환경 지원&quot;</a></h2>
-        <ul class="pts">
-          <li>금융위원회는 여전업권이 디지털자산과 인공지능(AI)이 가져올 변화를 새로운 기회로 활용하는 한편 혁신적인 금융서비스를 발굴해달라고 독려했다.</li>
-          <li>안창국 금융위원회 상임위원은 이날 여신금융협회가 &#x27;여신금융 2.0: 디지털 자산·인공지능(AI))·성장금융의 융합&#x27;을 주제로 연 15회 여신금융포럼 축사에서 이같이 말했다.</li>
-          <li>그는 &quot;금융의 기술과 형태가 달라지더라도 안전하고 신뢰할 수 있는 금융거래를 뒷받침하는 인프라와 전문성의 중요성은 변하지 않을 것&quot;이라며 &quot;여전업권이 앞으로도 새로운 금융환경에서 금융혁신을 주도해 나갈 것&quot;이라고 기대했다.</li>
-        </ul>
-        <p class="src">연합뉴스 11.24 16:12 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.yna.co.kr/view/AKR20261124144600002" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
-      </div>
-    </article>
   </main>
   <p class="foot">기사 문장의 저작권은 각 언론사에 있습니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요. 투자 조언이 아닙니다.</p>
 </div>
+<script>
+(function () {
+  var bar = document.querySelector(".filter");
+  if (!bar) return;
+  var stories = document.querySelectorAll(".story");
+  function apply(tag) {
+    stories.forEach(function (s) {
+      var tags = (s.getAttribute("data-tags") || "").split("|");
+      s.hidden = tag !== "" && tags.indexOf(tag) < 0;
+    });
+    bar.querySelectorAll("button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-tag") === tag));
+    });
+  }
+  bar.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (b) apply(b.getAttribute("data-tag"));
+  });
+})();
+</script>
 </body>
 </html>
