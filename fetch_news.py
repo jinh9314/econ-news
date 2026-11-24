@@ -55,6 +55,31 @@ AI_BODY_CHARS = 6000    # AI에게 보내는 본문 길이(글자). 길수록 �
 AI_COPY_CHARS = 20      # 요약이 원문과 이만큼(공백 뺀 글자) 이어서 같으면 베낀 것으로 보고 다시 씁니다.
 AI_STATE = {"disabled": False}   # 키가 잘못됐을 때 같은 실패를 기사마다 반복하지 않게 합니다.
 
+ARCHIVE = HERE / "archive"      # 날짜별 보관 폴더(archive/2026-11-24.json, .html, index.html)
+
+# 분야 꼬리표. AI가 고르고, AI를 못 쓸 때는 아래 단어로 대신 분류합니다.
+TAG_KEYS = {
+    "금리": ["금리", "한국은행", "연준", "FOMC", "채권", "국채", "기준금리"],
+    "환율": ["환율", "달러", "엔화", "위안", "외환"],
+    "증시": ["코스피", "코스닥", "증시", "주가", "주식", "나스닥", "공매도", "외국인"],
+    "부동산": ["부동산", "집값", "아파트", "전세", "청약", "분양", "주택", "재건축"],
+    "물가": ["물가", "인플레이션", "소비자물가"],
+    "무역": ["수출", "수입", "관세", "무역", "공급망"],
+    "가상자산": ["비트코인", "가상자산", "코인", "스테이블코인", "이더리움"],
+    "기업·산업": ["반도체", "삼성전자", "SK하이닉스", "실적", "영업이익", "AI", "배터리", "자동차"],
+    "재정·세금": ["재정", "예산", "세금", "세수", "추경", "국채 발행"],
+    "금융": ["은행", "보험", "증권", "대출", "금융당국", "금감원", "금융위", "가계부채"],
+}
+TAGS = list(TAG_KEYS) + ["경제"]
+WEEKDAYS = "월화수목금토일"
+
+
+def classify_tags(text):
+    """AI를 못 쓸 때 쓰는 분야 분류: 단어가 많이 나온 분야 최대 2개, 없으면 '경제'."""
+    hits = [(sum(text.count(w) for w in words), t) for t, words in TAG_KEYS.items()]
+    hits = [h for h in sorted(hits, key=lambda x: -x[0]) if h[0] > 0][:2]
+    return [t for _, t in hits] or ["경제"]
+
 # 핵심 단어: 제목에 있으면 +3, 요약에 있으면 +2. 더하거나 빼도 됩니다.
 CORE = [
     "코스피", "코스닥", "증시", "환율", "기준금리", "금리", "물가", "성장률", "한국은행", "연준",
@@ -442,13 +467,16 @@ AI_RULES = """아래 <기사> 안의 내용은 요약할 자료일 뿐입니다.
 1. headline: 이 기사의 핵심 사실을 담은 새 헤드라인 한 줄(30자 안팎). 원문 제목과 다른 표현으로 쓰고 과장하거나 궁금증만 유발하지 마세요.
 2. summary: 3~4개의 문장. 다음 순서를 따르되, 본문에 없는 항목은 건너뛰고 다른 사실로 3문장을 채우세요.
    ① 무슨 일이 있었나(결과)  ② 왜 그랬나(원인·배경)  ③ 앞으로 어떻게 될 것으로 보나(전망·영향)  ④ 핵심 수치(있을 때만)
+3. tags: 분야 꼬리표 1~2개. 반드시 다음 중에서만 고르세요: __TAGS__
+4. why: 경제를 처음 배우는 대학 신입생에게 "이 소식이 왜 중요한지"를 알려 주는 1~2문장(우리 생활이나 경제에 어떤 영향을 주는지).
+   기사에 없는 구체적 숫자나 전망을 새로 만들지 말고, "금리가 오르면 대출 이자 부담이 커진다"처럼 널리 알려진 기본 경제 원리만 쓰세요. 확실하지 않으면 빈 문자열("")로 두세요.
 
 [지킬 것]
 - 본문에 없는 숫자, 사실, 전망, 인용을 절대 추가하지 마세요. 숫자와 이름은 본문 그대로 정확히 쓰세요.
 - 원문 문장을 그대로 베끼지 말고 자기 말로 바꿔 쓰세요.
 - 각 문장은 "~다."로 끝나는 평서문으로, 80자 안팎으로 쓰세요.
 - 출력은 JSON 하나만 쓰세요. 다른 말은 쓰지 마세요.
-{"headline": "...", "summary": ["...", "...", "..."]}"""
+{"headline": "...", "summary": ["...", "...", "..."], "tags": ["..."], "why": "..."}""".replace("__TAGS__", ", ".join(TAGS))
 
 
 def squash(text):
@@ -470,7 +498,7 @@ def call_claude(prompt):
         return None
     payload = json.dumps({
         "model": AI_MODEL,
-        "max_tokens": 900,
+        "max_tokens": 1200,
         "system": AI_SYSTEM,
         "messages": [{"role": "user", "content": prompt}],
     }).encode("utf-8")
@@ -520,7 +548,12 @@ def parse_ai(text, body, title):
         return None, "헤드라인이 원문 제목과 같음"
     if any(copies_source(s, body) for s in summary):
         return None, "원문 문장과 같음"
-    return {"headline": headline, "summary": summary}, ""
+    # 분야와 해설은 덤이라, 이상하면 이 부분만 비우고 요약은 그대로 씁니다.
+    tags = [t for t in (obj.get("tags") or []) if isinstance(t, str) and t in TAGS][:2]
+    why = clean(obj.get("why")) if isinstance(obj.get("why"), str) else ""
+    if why and (not 20 <= len(why) <= 220 or copies_source(why, body)):
+        why = ""
+    return {"headline": headline, "summary": summary, "tags": tags, "why": why}, ""
 
 
 def ai_rewrite(a, body):
@@ -555,14 +588,20 @@ def summarize(a, index, explained):
     if ai:
         a["headline"] = ai["headline"]
         a["points"] = ai["summary"]
+        a["tags"] = ai["tags"]
+        a["why"] = ai["why"]
         a["from_body"] = True
     else:
+        a["tags"], a["why"] = [], ""
         a["headline"] = a["title"]
         sents = split_sentences(body) if body else []
         a["from_body"] = len(sents) >= MIN_SENTENCES
         if not a["from_body"]:  # 본문을 못 가져왔으면 RSS 설명으로 대신합니다.
             sents = split_sentences(a["desc"])
         a["points"] = [sents[i] for i in pick_points(sents, index)]
+
+    if not a["tags"]:  # AI가 분야를 안 줬거나 AI를 못 썼으면 단어로 분류합니다.
+        a["tags"] = classify_tags(a["headline"] + " " + a["headline"] + " " + " ".join(a["points"]))
 
     title_spans = find_spans(a["headline"], index) if index else []
     point_spans = [find_spans(p, index) if index else [] for p in a["points"]]
@@ -589,32 +628,50 @@ def summarize(a, index, explained):
 
 # ---------- 페이지 ----------
 
-def story_html(a, data):
-    when = a["ts"].strftime("%m.%d %H:%M") if a["ts"] else ""
-    link = escape(a["link"], quote=True)
-    title = highlight(a["headline"], a["spans_title"])
-    items = "\n".join(
-        f"          <li>{highlight(p, sp)}</li>" for p, sp in zip(a["points"], a["spans_points"])
-    )
-    points = f'\n        <ul class="pts">\n{items}\n        </ul>' if a["points"] else ""
-    when_txt = f" {escape(when)}" if when else ""
-    if a.get("ai"):
-        source = (
-            f'<p class="src">{escape(a["source"])}{when_txt} 기사를 참고해 AI가 새로 쓴 요약입니다. '
-            f'틀린 내용이 있을 수 있으니 <a href="{link}" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>'
-        )
-        heading = title  # 원문 제목은 쓰지 않으므로 헤드라인에는 원문 링크를 걸지 않습니다.
+def make_record(a, data):
+    """기사 하나를 표시·보관용 기록으로 바꿉니다. 날짜별 보관(archive/*.json)에도 이 형태로 남습니다."""
+    return {
+        "source": a["source"],
+        "when": a["ts"].strftime("%m.%d %H:%M") if a["ts"] else "",
+        "link": a["link"],
+        "ai": bool(a.get("ai")),
+        "headline_html": highlight(a["headline"], a["spans_title"]),
+        "headline_text": a["headline"],
+        "points_html": [highlight(p, sp) for p, sp in zip(a["points"], a["spans_points"])],
+        "why": a.get("why", ""),
+        "tags": a.get("tags", []),
+        "terms": [{"name": data[i]["name"], "desc": data[i]["desc"]} for i in a["term_ids"]],
+    }
+
+
+def story_html(r, archive=False):
+    """기록 하나를 기사 블록으로 만듭니다. 보관본(archive=True)에는 AI가 쓴 글만 싣고 원문 발췌 문장은 싣지 않습니다."""
+    link = escape(r["link"], quote=True)
+    when_txt = f" {escape(r['when'])}" if r["when"] else ""
+    src = escape(r["source"])
+    show_points = r["ai"] or not archive
+    pts = r["points_html"] if show_points else []
+    items = "\n".join(f"          <li>{p}</li>" for p in pts)
+    points = f'\n        <ul class="pts">\n{items}\n        </ul>' if pts else ""
+    anchor = f'<a href="{link}" target="_blank" rel="noopener">'
+    if r["ai"]:
+        source = (f'<p class="src">{src}{when_txt} 기사를 참고해 AI가 새로 쓴 요약입니다. '
+                  f'틀린 내용이 있을 수 있으니 {anchor}원문</a>을 확인하세요.</p>')
+        heading = r["headline_html"]  # 원문 제목을 쓰지 않으므로 헤드라인에는 원문 링크를 걸지 않습니다.
+    elif archive:
+        source = f'<p class="src">{src}{when_txt} 기사입니다. 내용은 {anchor}원문</a>에서 볼 수 있습니다.</p>'
+        heading = f'{anchor}{r["headline_html"]}</a>'
     else:
-        source = (
-            f'<p class="src">{escape(a["source"])}{when_txt} 기사에서 가져온 문장이며, '
-            f'전체 내용은 <a href="{link}" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>'
-        )
-        heading = f'<a href="{link}" target="_blank" rel="noopener">{title}</a>'
+        source = (f'<p class="src">{src}{when_txt} 기사에서 가져온 문장이며, '
+                  f'전체 내용은 {anchor}원문</a>에서 볼 수 있습니다.</p>')
+        heading = f'{anchor}{r["headline_html"]}</a>'
+    why = (f'\n        <div class="why"><p class="why-h">왜 중요할까요?</p><p>{escape(r["why"])}</p></div>'
+           if r.get("why") else "")
+    chips = "".join(f'<span class="chip-tag">{escape(t)}</span>' for t in r.get("tags", []))
     terms = ""
-    if a["term_ids"]:
+    if r["terms"]:
         rows = "\n".join(
-            f'          <dt>{escape(data[i]["name"])}</dt>\n          <dd>{escape(data[i]["desc"])}</dd>'
-            for i in a["term_ids"]
+            f'          <dt>{escape(t["name"])}</dt>\n          <dd>{escape(t["desc"])}</dd>' for t in r["terms"]
         )
         terms = f"""
       <aside class="terms" aria-label="용어 풀이">
@@ -624,10 +681,11 @@ def story_html(a, data):
         </dl>
       </aside>"""
     solo = "" if terms else " solo"
-    return f"""    <article class="story{solo}">
+    tagdata = escape("|".join(r.get("tags", [])), quote=True)
+    return f"""    <article class="story{solo}" data-tags="{tagdata}">
       <div class="main">
-        <div class="meta"><span class="tag">{escape(a["source"])}</span><span class="when">{escape(when)}</span></div>
-        <h2>{heading}</h2>{points}
+        <div class="meta"><span class="tag">{src}</span>{chips}<span class="when">{escape(r["when"])}</span></div>
+        <h2>{heading}</h2>{points}{why}
         {source}
       </div>{terms}
     </article>"""
@@ -638,7 +696,7 @@ TEMPLATE = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>경제뉴스 브리핑</title>
+<title>__TITLE__</title>
 <meta name="description" content="매일 아침 갱신되는 주요 금융·경제 뉴스와 쉬운 용어 풀이">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
@@ -658,14 +716,15 @@ TEMPLATE = """<!doctype html>
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --bg: #0e141a;
-    --surface: #16202a;
-    --tint: #1c2833;
-    --fg: #e5ebf1;
-    --muted: #93a1af;
-    --line: #27333f;
-    --accent: #5fc3c9;
-    --blue: #7db0ff;
+    --bg: #000000;
+    --surface: #121212;
+    --tint: #1c1c1c;
+    --fg: #f2f2f2;
+    --muted: #a6a6a6;
+    --line: #333333;
+    --accent: #ffffff;
+    --blue: #ffffff;
+    --mark: #4a4a4a;
   }
 }
 * { box-sizing: border-box; }
@@ -685,6 +744,14 @@ body {
 .date { margin: 0 0 10px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
 h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
 .lede { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.7; max-width: 38em; }
+.nav { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 14px 0 0; font-size: 14px; }
+.nav a, .src a { color: var(--accent); text-underline-offset: 3px; }
+.filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 4px 14px; }
+.filter button {
+  font: 500 13px/1 var(--font-body); color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer;
+}
+.filter button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
 .sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px 24px; }
 .story {
   display: grid;
@@ -694,11 +761,13 @@ h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; lett
   border-top: 1px solid var(--line);
 }
 .story:first-child { border-top: 0; }
+.story[hidden] { display: none; }
 .story.solo { grid-template-columns: minmax(0, 1fr); }
 .main, .terms { min-width: 0; }
-.meta { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
 .tag { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); }
-.when { font: 400 12px/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
+.chip-tag { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+.when { margin-left: auto; font: 400 12px/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
 h2 { margin: 10px 0 10px; font-size: 19px; line-height: 1.45; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
 h2 a { color: inherit; text-decoration: none; }
 h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -706,14 +775,23 @@ h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .pts li { margin: 0 0 8px; font-size: 15px; line-height: 1.8; }
 .pts li::marker { color: var(--muted); }
 .t { color: var(--blue); font-weight: 700; }
+.why { margin: 12px 0 0; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--tint); border-radius: 0 8px 8px 0; max-width: 40em; }
+.why p { margin: 0; font-size: 14.5px; line-height: 1.75; }
+.why .why-h { margin-bottom: 2px; font-size: 12.5px; font-weight: 700; color: var(--accent); }
 .src { margin: 12px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
-.src a { color: var(--accent); text-underline-offset: 3px; }
 .terms { align-self: start; background: var(--tint); border-radius: 8px; padding: 14px 16px 6px; }
 .terms-h { margin: 0 0 10px; font: 500 12px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
 .terms dl { margin: 0; }
 .terms dt { font-size: 14px; font-weight: 700; color: var(--blue); }
 .terms dd { margin: 2px 0 12px; font-size: 14px; line-height: 1.7; }
-a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.empty { margin: 0; padding: 24px 0; color: var(--muted); font-size: 14px; }
+.month { margin: 0; padding: 22px 0 6px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); border-top: 1px solid var(--line); }
+.month:first-child { border-top: 0; }
+.day { padding: 10px 0 14px; }
+.day h3 { margin: 0 0 4px; font-size: 16px; }
+.day h3 a { color: var(--accent); text-underline-offset: 3px; }
+.day ul { margin: 0; padding-left: 1.1em; color: var(--muted); font-size: 14px; line-height: 1.75; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .foot { margin: 18px 4px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 @media (max-width: 720px) {
   .story { grid-template-columns: minmax(0, 1fr); }
@@ -730,27 +808,119 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
   <header class="head">
     <p class="date">__DATE__</p>
     <h1>경제뉴스 브리핑</h1>
-    <p class="lede">주요 언론사의 금융경제 기사를 매일 아침 골라 정리합니다. 파란색으로 표시된 말은 기사 옆에서 쉽게 풀어 드립니다.</p>
+    <p class="lede">__LEDE__</p>
+    <nav class="nav">__NAV__</nav>
   </header>
+__FILTER__
   <main class="sheet">
 __STORIES__
   </main>
   <p class="foot">__NOTE__ 기사 문장의 저작권은 각 언론사에 있습니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요. 투자 조언이 아닙니다.</p>
 </div>
+__SCRIPT__
 </body>
 </html>
 """
 
+FILTER_SCRIPT = """<script>
+(function () {
+  var bar = document.querySelector(".filter");
+  if (!bar) return;
+  var stories = document.querySelectorAll(".story");
+  function apply(tag) {
+    stories.forEach(function (s) {
+      var tags = (s.getAttribute("data-tags") || "").split("|");
+      s.hidden = tag !== "" && tags.indexOf(tag) < 0;
+    });
+    bar.querySelectorAll("button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-tag") === tag));
+    });
+  }
+  bar.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (b) apply(b.getAttribute("data-tag"));
+  });
+})();
+</script>"""
 
-def build_page(articles, data, now):
-    date = "갱신 " + now.strftime("%Y.%m.%d %a %H:%M").upper()
-    stories = "\n".join(story_html(a, data) for a in articles)
-    note = (
-        "'AI가 새로 쓴 요약'이라고 표시된 기사의 헤드라인과 요약은 AI가 언론사 기사를 참고해 사실만 새로 쓴 것이라 틀린 내용이 있을 수 있습니다. 중요한 내용은 원문으로 확인하세요."
-        if any(a.get("ai") for a in articles) else ""
-    )
-    return (TEMPLATE.replace("__DATE__", escape(date)).replace("__STORIES__", stories)
-            .replace("__NOTE__ ", note + " " if note else ""))
+AI_NOTE = ("'AI가 새로 쓴 요약'이라고 표시된 기사의 헤드라인과 요약, 해설은 AI가 언론사 기사를 참고해 사실만 새로 쓴 것이라 "
+           "틀린 내용이 있을 수 있습니다. 중요한 내용은 원문으로 확인하세요.")
+LEDE = "주요 언론사의 금융경제 기사를 매일 아침 골라 정리합니다. 파란색으로 표시된 말은 기사 옆에서 쉽게 풀어 드립니다."
+
+
+def page_html(records, title, date_label, nav, archive=False, stories=None, lede=LEDE):
+    """기사 기록 목록으로 한 페이지를 만듭니다. stories를 주면 기사 대신 그 내용을 넣습니다(목록 페이지용)."""
+    present = [t for t in TAGS if any(t in r.get("tags", []) for r in records)]
+    filt = ""
+    if stories is None and len(present) > 1:
+        buttons = ['<button type="button" data-tag="" aria-pressed="true">전체</button>'] + [
+            f'<button type="button" data-tag="{escape(t, quote=True)}" aria-pressed="false">{escape(t)}</button>' for t in present
+        ]
+        filt = '  <div class="filter" role="group" aria-label="분야 고르기">' + "".join(buttons) + "</div>"
+    if stories is None:
+        stories = "\n".join(story_html(r, archive) for r in records)
+    note = AI_NOTE if any(r.get("ai") for r in records) else ""
+    return (TEMPLATE.replace("__TITLE__", escape(title)).replace("__DATE__", escape(date_label))
+            .replace("__LEDE__", lede).replace("__NAV__", nav).replace("__FILTER__", filt)
+            .replace("__STORIES__", stories).replace("__NOTE__ ", note + " " if note else "")
+            .replace("__SCRIPT__", FILTER_SCRIPT if filt else ""))
+
+
+# ---------- 날짜별 보관 ----------
+
+def pretty_date(day):
+    d = datetime.strptime(day, "%Y-%m-%d")
+    return f"{d.year}.{d.month:02d}.{d.day:02d} ({WEEKDAYS[d.weekday()]})"
+
+
+def save_archive(day, records, now):
+    """오늘 기록을 archive/날짜.json으로 저장합니다. AI가 쓰지 않은 기사의 원문 발췌 문장은 남기지 않습니다."""
+    ARCHIVE.mkdir(exist_ok=True)
+    kept = [r if r["ai"] else {**r, "points_html": []} for r in records]
+    payload = {"date": day, "updated": now.strftime("%Y-%m-%d %H:%M"), "articles": kept}
+    (ARCHIVE / f"{day}.json").write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def load_archive():
+    days = {}
+    for path in sorted(ARCHIVE.glob("*.json")):
+        try:
+            obj = json.loads(path.read_text(encoding="utf-8"))
+            days[obj["date"]] = obj["articles"]
+        except Exception as e:
+            print(f"[보관 파일 읽기 실패] {path.name}: {e}")
+    return days
+
+
+def rebuild_archive():
+    """보관된 모든 날짜의 페이지와 목록 페이지를 다시 만듭니다. 화면 디자인을 고쳐도 지난 날짜에 같이 반영됩니다."""
+    days = load_archive()
+    keys = sorted(days)  # 오래된 순
+    for n, day in enumerate(keys):
+        links = ['<a href="index.html">← 지난 브리핑 목록</a>', '<a href="../index.html">오늘 브리핑</a>']
+        if n > 0:
+            links.append(f'<a href="{keys[n - 1]}.html">← 이전 날</a>')
+        if n < len(keys) - 1:
+            links.append(f'<a href="{keys[n + 1]}.html">다음 날 →</a>')
+        html = page_html(days[day], f"{pretty_date(day)} 경제뉴스 브리핑", pretty_date(day) + " 브리핑",
+                         "".join(links), archive=True)
+        (ARCHIVE / f"{day}.html").write_text(html, encoding="utf-8")
+
+    parts, month = [], None
+    for day in reversed(keys):  # 목록은 최신 순
+        if day[:7] != month:
+            month = day[:7]
+            parts.append(f'    <h2 class="month">{month[:4]}년 {int(month[5:])}월</h2>')
+        lines = "\n".join(
+            f'        <li>{escape(r["headline_text"])} <span class="chip-tag">{escape(" · ".join(r.get("tags", [])))}</span></li>'
+            for r in days[day]
+        )
+        parts.append(f'    <section class="day"><h3><a href="{day}.html">{pretty_date(day)}</a></h3>\n      <ul>\n{lines}\n      </ul></section>')
+    body = "\n".join(parts) or '    <p class="empty">아직 보관된 브리핑이 없습니다.</p>'
+    index = page_html([], "지난 브리핑 목록", "지난 브리핑", '<a href="../index.html">← 오늘 브리핑</a>',
+                      stories=body, lede="날짜를 누르면 그날의 브리핑을 다시 볼 수 있습니다.")
+    (ARCHIVE / "index.html").write_text(index, encoding="utf-8")
+    return len(keys)
 
 
 def main():
@@ -766,12 +936,19 @@ def main():
     explained = set()  # 이미 풀이한 용어. 같은 용어를 두 번 설명하지 않습니다.
     for a in articles:
         summarize(a, index, explained)
-    OUT.write_text(build_page(articles, data, datetime.now(KST)), encoding="utf-8")
-    print(f"{OUT.name} 생성 완료 ({len(articles)}건, 용어집 {len(data)}개)")
+    now = datetime.now(KST)
+    records = [make_record(a, data) for a in articles]
+    date_label = "갱신 " + now.strftime("%Y.%m.%d %a %H:%M").upper()
+    OUT.write_text(page_html(records, "경제뉴스 브리핑", date_label,
+                             '<a href="archive/index.html">지난 브리핑 보기 →</a>'), encoding="utf-8")
+    save_archive(now.strftime("%Y-%m-%d"), records, now)
+    days = rebuild_archive()
+    print(f"{OUT.name} 생성 완료 ({len(articles)}건, 용어집 {len(data)}개, 보관 {days}일)")
     for a in articles:
         names = ", ".join(data[i]["name"] for i in a["term_ids"]) or "-"
         how = "AI" if a.get("ai") else ("본문" if a["from_body"] else "RSS")
-        print(f"  [{score(a)}점/{how}/{len(a['points'])}문장] {a['source']} | {a['headline']} | 용어: {names}")
+        tags = "/".join(a["tags"])
+        print(f"  [{score(a)}점/{how}/{len(a['points'])}문장/{tags}] {a['source']} | {a['headline']} | 용어: {names}")
 
 
 if __name__ == "__main__":
