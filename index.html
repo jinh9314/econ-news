@@ -62,12 +62,14 @@ h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; lett
 .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .tag { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); }
 .when { font: 400 12px/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
-h2 { margin: 10px 0 8px; font-size: 19px; line-height: 1.45; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { margin: 10px 0 10px; font-size: 19px; line-height: 1.45; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
 h2 a { color: inherit; text-decoration: none; }
 h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
-.sum { margin: 0; font-size: 15px; line-height: 1.8; max-width: 38em; }
+.pts { margin: 0; padding-left: 1.1em; max-width: 40em; }
+.pts li { margin: 0 0 8px; font-size: 15px; line-height: 1.8; }
+.pts li::marker { color: var(--muted); }
 .t { border-bottom: 1.5px dotted var(--accent); }
-.src { margin: 12px 0 0; font-size: 13px; }
+.src { margin: 12px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 .src a { color: var(--accent); text-underline-offset: 3px; }
 .terms { align-self: start; background: var(--tint); border-radius: 8px; padding: 14px 16px 6px; }
 .terms-h { margin: 0 0 10px; font: 500 12px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
@@ -89,17 +91,21 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
 <body>
 <div class="wrap">
   <header class="head">
-    <p class="date">갱신 2026.11.24 TUE 16:18</p>
+    <p class="date">갱신 2026.11.24 TUE 16:40</p>
     <h1>경제뉴스 브리핑</h1>
-    <p class="lede">주요 언론사의 금융경제 기사를 매일 아침 모아 보여줍니다. 점선이 그어진 말은 기사 옆에서 쉽게 풀어 드립니다.</p>
+    <p class="lede">주요 언론사의 금융경제 기사에서 핵심 문장을 골라 매일 아침 모아 보여줍니다. 점선이 그어진 말은 기사 옆에서 쉽게 풀어 드립니다.</p>
   </header>
   <main class="sheet">
     <article class="story">
       <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 16:04</span></div>
-        <h2><a href="https://www.yna.co.kr/view/AKR20261124138251008" target="_blank" rel="noopener">젠슨황 복귀에 6%대 급반등, &#x27;5천피&#x27; 회복…<span class="t">코스닥</span> 4.8%↑(종합)</a></h2>
-        <p class="sum">(서울=연합뉴스) 곽윤아 기자 = 24일 <span class="t">코스피</span>가 젠슨 황 엔비디아 최고경영자(CEO)의 경영 복귀 소식에 6% 넘게 올라 &#x27;5천피&#x27;(<span class="t">코스피</span> 5...</p>
-        <p class="src"><a href="https://www.yna.co.kr/view/AKR20261124138251008" target="_blank" rel="noopener">원문 보기</a></p>
+        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 16:31</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124151500008" target="_blank" rel="noopener">다올투자증권 &quot;계열사 다올저축은행 주식 222억원에 추가취득&quot;</a></h2>
+        <ul class="pts">
+          <li><span class="t">코스피</span> 상장사 다올투자증권[030210]은 상호저축은행업 계열사 다올저축은행의 주식 280만4천346주를 약 222억원에 추가 취득한다고 24일 공시했다.</li>
+          <li>주식 취득 뒤 다올투자증권의 다올저축은행 지분율은 65.2%가 된다.</li>
+          <li>다올투자증권은 이번 주식 취득의 목적을 &quot;기체결 계약에 따른 거래상대방과의 권리 행사 및 의무 이행&quot;이라고 밝혔다.</li>
+        </ul>
+        <p class="src">연합뉴스 11.24 16:31 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.yna.co.kr/view/AKR20261124151500008" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
       </div>
       <aside class="terms" aria-label="용어 풀이">
         <p class="terms-h">용어 풀이</p>
@@ -109,34 +115,66 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
         </dl>
       </aside>
     </article>
-    <article class="story solo">
-      <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 15:55</span></div>
-        <h2><a href="https://www.yna.co.kr/view/AKR20261124092451008" target="_blank" rel="noopener">증권가, 젠슨황 복귀에 &quot;AI 불안 완화…변수 여전·회복엔 시간&quot;(종합)</a></h2>
-        <p class="sum">(서울=연합뉴스) 김유향 기자 = 젠슨 황 엔비디아 최고경영자(CEO)의 경영 복귀 소식 등의 영향으로 국내 증시가 급반등하는 가운데, 증권가에...</p>
-        <p class="src"><a href="https://www.yna.co.kr/view/AKR20261124092451008" target="_blank" rel="noopener">원문 보기</a></p>
-      </div>
-    </article>
-    <article class="story solo">
-      <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 15:48</span></div>
-        <h2><a href="https://www.yna.co.kr/view/AKR20261124140400002" target="_blank" rel="noopener">환율, 엔비디아발 위험선호 회복에 하락…3.5원 내린 1,342.4원</a></h2>
-        <p class="sum">(서울=연합뉴스) 이도흔 기자 = 원/달러 환율은 24일 미국 기술주를 중심으로 위험선호 심리가 회복되며 소폭 하락했다.</p>
-        <p class="src"><a href="https://www.yna.co.kr/view/AKR20261124140400002" target="_blank" rel="noopener">원문 보기</a></p>
-      </div>
-    </article>
     <article class="story">
       <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 15:37</span></div>
-        <h2><a href="https://www.yna.co.kr/view/AKR20261124138200008" target="_blank" rel="noopener">젠슨황 복귀에 6%대 급반등, &#x27;5천피&#x27; 회복…<span class="t">코스닥</span> 4.8%↑</a></h2>
-        <p class="sum">(서울=연합뉴스) 곽윤아 기자 = 24일 <span class="t">코스피</span>가 젠슨 황 엔비디아 최고경영자(CEO)의 경영 복귀 소식에 6% 넘게 올라 &#x27;5천피&#x27;(<span class="t">코스피</span> 5...</p>
-        <p class="src"><a href="https://www.yna.co.kr/view/AKR20261124138200008" target="_blank" rel="noopener">원문 보기</a></p>
+        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 16:04</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124138251008" target="_blank" rel="noopener">젠슨황 복귀에 6%대 급반등, &#x27;5천피&#x27; 회복…<span class="t">코스닥</span> 4.8%↑(종합)</a></h2>
+        <ul class="pts">
+          <li>24일 <span class="t">코스피</span>가 젠슨 황 엔비디아 최고경영자(CEO)의 경영 복귀 소식에 6% 넘게 올라 &#x27;5천피&#x27;(<span class="t">코스피</span> 5,000)를 회복했다.</li>
+          <li>이날 <span class="t">코스피</span> 지수는 전장보다 297.49포인트(6.32%) 오른 5,006.03에 장을 마쳤다.</li>
+          <li>상장사의 자사주 매입이 반영되는 기타법인은 4천483억원 순매수했다.</li>
+        </ul>
+        <p class="src">연합뉴스 11.24 16:04 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.yna.co.kr/view/AKR20261124138251008" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
       </div>
       <aside class="terms" aria-label="용어 풀이">
         <p class="terms-h">용어 풀이</p>
         <dl>
           <dt>주가지수</dt>
           <dd>여러 종목 주가를 하나로 묶어 시장 전체의 흐름을 보여주는 수치입니다. 코스피가 대표적입니다.</dd>
+        </dl>
+      </aside>
+    </article>
+    <article class="story">
+      <div class="main">
+        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 15:55</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124092451008" target="_blank" rel="noopener">증권가, 젠슨황 복귀에 &quot;AI 불안 완화…변수 여전·회복엔 시간&quot;(종합)</a></h2>
+        <ul class="pts">
+          <li>젠슨 황 엔비디아 최고경영자(CEO)의 경영 복귀 소식 등의 영향으로 국내 증시가 급반등하는 가운데, 증권가에서는 인공지능(AI) 투자 생태계의 신뢰 회복 계기가 마련됐다는 평가가 나온다.</li>
+          <li>24일 금융투자업계 및 한국거래소에 따르면 이날 <span class="t">코스피</span>는 6.32% 급등하며 5,006.03으로 마감, 5천선을 탈환했다.</li>
+          <li>강한 상승세의 배경으로는 간밤 황 CEO의 엔비디아 복귀 소식에 따른 뉴욕증시의 급등이 꼽힌다.</li>
+          <li>그러면서 &quot;증안<span class="t">펀드</span>의 실제 자금 투입 여부와 자사주 매입 한도 완화가 기업들의 실질적인 매입 확대로 이어질지 등도 증시 회복 탄력성을 결정하는 단기 변수가 될 것&quot;이라고 분석했다.</li>
+        </ul>
+        <p class="src">연합뉴스 11.24 15:55 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.yna.co.kr/view/AKR20261124092451008" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
+      </div>
+      <aside class="terms" aria-label="용어 풀이">
+        <p class="terms-h">용어 풀이</p>
+        <dl>
+          <dt>주가지수</dt>
+          <dd>여러 종목 주가를 하나로 묶어 시장 전체의 흐름을 보여주는 수치입니다. 코스피가 대표적입니다.</dd>
+          <dt>펀드</dt>
+          <dd>여러 사람에게서 모은 돈을 전문가가 주식, 채권 등에 투자하고 그 성과를 투자한 몫에 따라 나누는 상품입니다.</dd>
+        </dl>
+      </aside>
+    </article>
+    <article class="story">
+      <div class="main">
+        <div class="meta"><span class="tag">연합뉴스</span><span class="when">11.24 15:48</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124140400002" target="_blank" rel="noopener">환율, 엔비디아발 위험선호 회복에 하락…3.5원 내린 1,342.4원</a></h2>
+        <ul class="pts">
+          <li>원/달러 환율은 24일 미국 기술주를 중심으로 위험선호 심리가 회복되며 소폭 하락했다.</li>
+          <li>이날 서울 <span class="t">외환시장</span>에서 미국 달러화 대비 원화 환율의 오후 3시30분 기준가는 3.5원 내린 1,342.4원으로 집계됐다.</li>
+          <li>미국 기술주 반등에 힘입어 국내 증시도 강세를 보였다.</li>
+          <li>다만 기술주 상승과 미국 경기 확장세, <span class="t">연방준비제도</span>(Fed·연준)의 추가 금리인상 기대가 맞물려 달러가 강세를 보이며 환율 하락 폭을 제한했다.</li>
+        </ul>
+        <p class="src">연합뉴스 11.24 15:48 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.yna.co.kr/view/AKR20261124140400002" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
+      </div>
+      <aside class="terms" aria-label="용어 풀이">
+        <p class="terms-h">용어 풀이</p>
+        <dl>
+          <dt>외환시장</dt>
+          <dd>원화와 달러처럼 서로 다른 나라 돈을 사고파는 시장입니다. 여기서 수요와 공급에 따라 환율이 정해집니다.</dd>
+          <dt>연방준비제도(Fed)</dt>
+          <dd>미국의 중앙은행 체계입니다. 워싱턴의 이사회와 지역 연방준비은행들로 이뤄져 통화정책을 맡습니다.</dd>
         </dl>
       </aside>
     </article>
@@ -144,8 +182,13 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
       <div class="main">
         <div class="meta"><span class="tag">한국경제</span><span class="when">11.24 15:28</span></div>
         <h2><a href="https://www.hankyung.com/article/2026112471836" target="_blank" rel="noopener"><span class="t">가상자산</span>거래소, 대주주 지분 20%로 제한…<span class="t">ICO</span> 허용</a></h2>
-        
-        <p class="src"><a href="https://www.hankyung.com/article/2026112471836" target="_blank" rel="noopener">원문 보기</a></p>
+        <ul class="pts">
+          <li>Google 검색에서 한국경제 기사를 더 자주 볼 수 있습니다.</li>
+          <li>정부가 <span class="t">가상자산</span>거래소 대주주의 지분 보유 한도를 원칙적으로 20%로 제한하고 당국의 승인을 받을 경우 예외적으로 최대 34%까지 허용하는 방안을 추진한다.</li>
+          <li>이란 전쟁 여파로 <span class="t">가상자산</span> 현물 <span class="t">ETF</span>의 법적 근거를 마련하기 위한 디지털자산기본법의 제정이 차일피일 미뤄지고 있어서다.2일 블루밍비트에 따...</li>
+          <li><span class="t">가상자산</span>(디지털자산) 2단계 입법인 디지털자산기본법의 정부안이 조만간 나올 전망이다.4일 금융위원회는 정부서울청사에서 권대영 금융위 부위원장 주재로 올해 첫 <span class="t">가상자산</span>위원회 회의를 열고 디지털자산기본법 정부 검토안의 ...</li>
+        </ul>
+        <p class="src">한국경제 11.24 15:28 기사에서 가져온 문장이며, 전체 내용은 <a href="https://www.hankyung.com/article/2026112471836" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
       </div>
       <aside class="terms" aria-label="용어 풀이">
         <p class="terms-h">용어 풀이</p>
@@ -154,11 +197,13 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
           <dd>실물 없이 전자적으로만 존재하며 인터넷에서 거래되는 화폐 성격의 자산입니다. 비트코인이 대표적입니다.</dd>
           <dt>가상통화공개(ICO)</dt>
           <dd>새 가상통화를 만드는 회사가 투자자에게 코인을 팔아 사업 자금을 모으는 방식입니다. 주식 공모와 비슷하지만 규제가 약해 위험합니다.</dd>
+          <dt>상장지수펀드(ETF)</dt>
+          <dd>특정 지수의 움직임을 따라가도록 만든 펀드를 주식처럼 거래소에서 사고팔 수 있게 한 상품입니다.</dd>
         </dl>
       </aside>
     </article>
   </main>
-  <p class="foot">제목과 핵심 문장은 각 언론사 RSS가 제공하는 내용이고, 전체 기사는 원문 링크에서 볼 수 있습니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요. 투자 조언이 아닙니다.</p>
+  <p class="foot">기사 문장의 저작권은 각 언론사에 있습니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요. 투자 조언이 아닙니다.</p>
 </div>
 </body>
 </html>
