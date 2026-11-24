@@ -52,7 +52,7 @@ GLOSSARY = HERE / "briefing_terms.json"
 # 키가 없거나 호출이 실패하면 위의 '문장 발췌' 방식으로 자동으로 대신합니다.
 AI_MODEL = os.environ.get("ANTHROPIC_MODEL", "").strip() or "claude-haiku-5-5"
 AI_BODY_CHARS = 6000    # AI에게 보내는 본문 길이(글자). 길수록 비용이 늘어납니다.
-AI_COPY_CHARS = 20      # 요약이 원문과 이만큼(공백 뺀 글자) 이어서 같으면 베낀 것으로 보고 다시 씁니다.
+AI_COPY_CHARS = 25      # 요약이 원문과 이만큼(공백 뺀 글자) 이어서 같으면 베낀 것으로 보고 다시 씁니다.
 AI_STATE = {"disabled": False}   # 키가 잘못됐을 때 같은 실패를 기사마다 반복하지 않게 합니다.
 
 ARCHIVE = HERE / "archive"      # 날짜별 보관 폴더(archive/2026-11-24.json, .html, index.html)
@@ -96,6 +96,9 @@ SKIP = [
     "동정", "인사", "부고", "부음", "결혼", "별세", "포토", "사진", "화보", "행사", "기념",
     "창립", "개최", "참석", "간담회", "토크콘서트", "업무협약", "MOU", "캠페인", "기부",
     "봉사", "후원", "이벤트", "프로모션", "시상", "수상", "기증",
+    # 여러 이슈를 한 글에 모아 놓은 모음·안내성 기사(요약하면 내용이 섞입니다)
+    "이 시각", "헤드라인", "게시판", "주요 일정", "일정]", "[표]", "[부음]", "[인사]", "[동정]", "[포토]",
+    "오늘의 증시", "마감 시황 정리", "뉴스 브리핑", "조간",
 ]
 
 # 문장 역할을 알아보는 말. 문장에 들어 있으면 그 역할 후보가 됩니다.
@@ -498,7 +501,7 @@ def call_claude(prompt):
         return None  # 이유는 main()이 맨 위에 한 번 적어 둡니다.
     payload = json.dumps({
         "model": AI_MODEL,
-        "max_tokens": 1200,
+        "max_tokens": 2500,
         "system": AI_SYSTEM,
         "messages": [{"role": "user", "content": prompt}],
     }).encode("utf-8")
@@ -522,7 +525,12 @@ def call_claude(prompt):
     except Exception as e:
         print(f"[AI 실패] {e}")
         return None
-    return "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text")
+    blocks = data.get("content", []) or []
+    text = "".join(b.get("text", "") for b in blocks if b.get("type") == "text")
+    # 실패했을 때 원인을 알 수 있게 응답의 겉모습을 적어 둡니다(내용 전체나 키는 적지 않습니다).
+    AI_STATE["meta"] = (f"종료사유={data.get('stop_reason')}, 블록={[b.get('type') for b in blocks]}, "
+                        f"글자수={len(text)}, 토큰={data.get('usage', {}).get('output_tokens')}")
+    return text
 
 
 def parse_ai(text, body, title):
@@ -572,6 +580,8 @@ def ai_rewrite(a, body):
             print(f"[AI 성공] {a['source']} | {result['headline']}")
             return result
         print(f"[AI 다시] {a['source']} {attempt}회차 불합격: {why}")
+        print(f"          응답 정보: {AI_STATE.get('meta')}")
+        print(f"          응답 앞부분: {reply[:160]!r}")
     return None
 
 
