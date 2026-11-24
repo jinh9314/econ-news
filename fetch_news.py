@@ -153,8 +153,15 @@ def strip_byline(text):
 
 
 def split_sentences(text):
+    """문장 단위로 나눕니다. '다.2일'처럼 붙어 있는 문장도 나누고, '…'로 잘린 조각은 버립니다."""
+    text = re.sub(r"(?<=다\.)(?=[^\s\"”’'\)\]])", " ", text)
     parts = re.split(r"(?<=[.!?])\s+|(?<=[.!?][\"”’'])\s+", text)
-    return [p.strip(" -·") for p in parts if p.strip(" -·")]
+    out = []
+    for p in parts:
+        p = p.strip(" -·")
+        if p and not (p.endswith(("…", "...")) and not re.search(r"다[.!?\"”’']*$", p)):
+            out.append(p)
+    return out
 
 
 def usable(s):
@@ -413,8 +420,12 @@ def pick_articles(all_items, index):
     return picked
 
 
-def summarize(a, index):
-    """고른 기사의 본문을 가져와 핵심 문장과 설명할 용어를 붙입니다."""
+def summarize(a, index, explained):
+    """고른 기사의 본문을 가져와 핵심 문장과 설명할 용어를 붙입니다.
+
+    같은 용어는 페이지 전체에서 처음 나온 기사에서만 풀이하고(explained에 기록),
+    한 기사 안에서도 처음 나온 자리에만 파란색 강조를 합니다.
+    """
     body = fetch_body(a["link"])
     sents = split_sentences(body) if body else []
     a["from_body"] = len(sents) >= MIN_SENTENCES
@@ -427,12 +438,22 @@ def summarize(a, index):
     ids = []
     for spans in [title_spans] + point_spans:
         for _, _, i in spans:
-            if i not in ids:
+            if i not in ids and i not in explained:  # 앞 기사에서 이미 풀이한 용어는 건너뜁니다.
                 ids.append(i)
     a["term_ids"] = ids[:MAX_TERMS]
-    keep = set(a["term_ids"])
-    a["spans_title"] = [s for s in title_spans if s[2] in keep]
-    a["spans_points"] = [[s for s in spans if s[2] in keep] for spans in point_spans]
+    explained.update(a["term_ids"])
+    keep, shown = set(a["term_ids"]), set()
+
+    def first_only(spans):  # 용어마다 이 기사에서 처음 나온 자리만 남깁니다(제목 → 문장 순서).
+        out = []
+        for s in spans:
+            if s[2] in keep and s[2] not in shown:
+                shown.add(s[2])
+                out.append(s)
+        return out
+
+    a["spans_title"] = first_only(title_spans)
+    a["spans_points"] = [first_only(spans) for spans in point_spans]
 
 
 # ---------- 페이지 ----------
@@ -491,6 +512,7 @@ TEMPLATE = """<!doctype html>
   --muted: #566473;
   --line: #d9e0e7;
   --accent: #0d6b73;
+  --blue: #1a5fd0;
   --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
@@ -504,6 +526,7 @@ TEMPLATE = """<!doctype html>
     --muted: #93a1af;
     --line: #27333f;
     --accent: #5fc3c9;
+    --blue: #7db0ff;
   }
 }
 * { box-sizing: border-box; }
@@ -543,13 +566,13 @@ h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .pts { margin: 0; padding-left: 1.1em; max-width: 40em; }
 .pts li { margin: 0 0 8px; font-size: 15px; line-height: 1.8; }
 .pts li::marker { color: var(--muted); }
-.t { border-bottom: 1.5px dotted var(--accent); }
+.t { color: var(--blue); font-weight: 700; }
 .src { margin: 12px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 .src a { color: var(--accent); text-underline-offset: 3px; }
 .terms { align-self: start; background: var(--tint); border-radius: 8px; padding: 14px 16px 6px; }
 .terms-h { margin: 0 0 10px; font: 500 12px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
 .terms dl { margin: 0; }
-.terms dt { font-size: 14px; font-weight: 700; color: var(--accent); }
+.terms dt { font-size: 14px; font-weight: 700; color: var(--blue); }
 .terms dd { margin: 2px 0 12px; font-size: 14px; line-height: 1.7; }
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .foot { margin: 18px 4px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
@@ -568,7 +591,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
   <header class="head">
     <p class="date">__DATE__</p>
     <h1>경제뉴스 브리핑</h1>
-    <p class="lede">주요 언론사의 금융경제 기사에서 핵심 문장을 골라 매일 아침 모아 보여줍니다. 점선이 그어진 말은 기사 옆에서 쉽게 풀어 드립니다.</p>
+    <p class="lede">주요 언론사의 금융경제 기사에서 핵심 문장을 골라 매일 아침 모아 보여줍니다. 파란색으로 표시된 말은 기사 옆에서 쉽게 풀어 드립니다.</p>
   </header>
   <main class="sheet">
 __STORIES__
@@ -596,8 +619,9 @@ def main():
         # 기존 페이지를 지우지 않고 실패로 끝냅니다.
         print("가져온 기사가 없어 페이지를 만들지 않았습니다.")
         sys.exit(1)
+    explained = set()  # 이미 풀이한 용어. 같은 용어를 두 번 설명하지 않습니다.
     for a in articles:
-        summarize(a, index)
+        summarize(a, index, explained)
     OUT.write_text(build_page(articles, data, datetime.now(KST)), encoding="utf-8")
     print(f"{OUT.name} 생성 완료 ({len(articles)}건, 용어집 {len(data)}개)")
     for a in articles:
