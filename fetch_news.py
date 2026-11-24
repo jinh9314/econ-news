@@ -2,9 +2,10 @@
 """경제뉴스 브리핑 생성기
 
 여러 언론사의 경제 RSS에서 기사를 모은 뒤, 동정·행사 기사는 빼고 금융경제 핵심어와
-경제 용어가 많은 기사부터 5개를 골라 index.html 한 장을 만듭니다.
-기사마다 헤드라인과 핵심 문장 하나를 보여주고, 그 안에 나온 경제 용어는 옆에 쉬운 풀이를 붙입니다.
-용어 풀이는 같은 폴더의 glossary.json에서 읽습니다. 표준 라이브러리만 쓰고, GitHub Actions가 매일 실행합니다.
+경제 용어가 많은 기사부터 5개를 고릅니다. 고른 기사는 본문을 가져와 역할이 다른 문장을
+골라 그대로 보여줍니다: 결과(무슨 일이 있었나) → 원인 → 전망 → 수치·배경.
+문장에 나온 경제 용어는 옆에 쉬운 풀이를 붙입니다(glossary.json).
+표준 라이브러리만 쓰고, GitHub Actions가 매일 실행합니다.
 """
 import json
 import re
@@ -14,6 +15,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from email.utils import parsedate_to_datetime
 from html import escape, unescape
+from html.parser import HTMLParser
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -31,12 +33,15 @@ FEEDS = {
     ],
 }
 
-TOP_N = 5             # 보여줄 기사 수
-PER_FEED = 20         # 출처마다 살펴볼 최신 기사 수
-MAX_PER_SOURCE = 4    # 한 출처에서 뽑을 최대 기사 수 (한 곳에 쏠리는 것만 막습니다)
-SENTENCE_LIMIT = 150  # 핵심 문장 최대 글자 수
-MAX_TERMS = 3         # 기사 하나에 붙일 용어 풀이 수
-TERM_BONUS = 2        # 용어가 하나 있을 때마다 더해 주는 점수
+TOP_N = 5               # 보여줄 기사 수
+PER_FEED = 20           # 출처마다 살펴볼 최신 기사 수
+MAX_PER_SOURCE = 4      # 한 출처에서 뽑을 최대 기사 수 (한 곳에 쏠리는 것만 막습니다)
+SUMMARY_SENTENCES = 4   # 기사마다 보여줄 문장 수 (최대). 공개할 때는 2~3으로 줄이는 것을 권합니다.
+MIN_SENTENCES = 3       # 본문에 문장이 충분하면 최소한 이만큼은 채웁니다.
+SENTENCE_MAX = 260      # 이보다 긴 문장은 되도록 고르지 않습니다.
+MIN_BODY_CHARS = 150    # 가져온 본문이 이보다 짧으면 본문을 못 가져온 것으로 봅니다.
+MAX_TERMS = 4           # 기사 하나에 붙일 용어 풀이 수
+TERM_BONUS = 2          # 용어가 하나 있을 때마다 더해 주는 점수
 OUT = HERE / "index.html"
 GLOSSARY = HERE / "glossary.json"
 
@@ -56,6 +61,23 @@ SKIP = [
     "동정", "인사", "부고", "부음", "결혼", "별세", "포토", "사진", "화보", "행사", "기념",
     "창립", "개최", "참석", "간담회", "토크콘서트", "업무협약", "MOU", "캠페인", "기부",
     "봉사", "후원", "이벤트", "프로모션", "시상", "수상", "기증",
+]
+
+# 문장 역할을 알아보는 말. 문장에 들어 있으면 그 역할 후보가 됩니다.
+CAUSE = ["때문", "영향", "여파", "힘입", "덕분", "탓", "원인", "배경", "이유", "자극", "촉발", "비롯", "반영"]
+OUTLOOK = [
+    "전망", "예상", "관측", "것으로 보", "내다", "점쳐", "기대", "우려", "가능성",
+    "향후", "앞으로", "당분간", "전문가들은", "증권가는", "분석했다", "분석이다",
+]
+
+# 기사 본문이 아닌 줄(저작권 안내, 기자 메일, 사진 설명 등)
+JUNK_RE = re.compile(
+    r"무단\s*전재|재배포|저작권|ⓒ|©|@|구독|▶|▲\s*사진|사진\s*=|제공\s*=|관련\s*기사|"
+    r"이 기사는|좋아요|댓글|카카오톡|페이스북|바로가기|뉴스레터|\S+\s기자(?:\s*=|\s*\)|\s*\]|\s*$)"
+)
+BYLINE_RES = [
+    re.compile(r"^\s*[\(\[][^)\]]{0,30}=[^)\]]{0,30}[\)\]]\s*"),                  # (서울=연합뉴스) [서울=뉴시스]
+    re.compile(r"^\s*[가-힣]{2,4}\s*(?:선임|수석|특파원|인턴)?\s*기자\s*=\s*"),      # 곽윤아 기자 =
 ]
 
 
@@ -104,43 +126,6 @@ def find_spans(text, index):
     return spans
 
 
-def split_sentences(text):
-    return [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
-
-
-def cut_sentence(s, limit=SENTENCE_LIMIT):
-    if len(s) <= limit:
-        return s
-    return s[:limit].rstrip(" ,") + "…"
-
-
-def enrich(a, data, index):
-    """기사에 핵심 문장과 설명할 용어를 붙입니다.
-
-    용어가 가장 많이 나오는 문장을 핵심 문장으로 고르고(같으면 앞쪽 문장),
-    제목과 그 문장에 나온 용어 중 최대 MAX_TERMS개만 풀이합니다.
-    """
-    a["term_ids"], a["spans_title"], a["spans_sent"], a["sentence"] = [], [], [], ""
-    sentences = split_sentences(a["desc"])
-    best, best_hits = "", -1
-    for s in sentences:
-        hits = len({i for _, _, i in find_spans(cut_sentence(s), index)}) if index else 0
-        if hits > best_hits:
-            best, best_hits = s, hits
-    a["sentence"] = cut_sentence(best)
-    if not index:
-        return
-    title_spans = find_spans(a["title"], index)
-    sent_spans = find_spans(a["sentence"], index)
-    ids = []
-    for _, _, i in title_spans + sent_spans:
-        if i not in ids:
-            ids.append(i)
-    a["term_ids"] = ids[:MAX_TERMS]
-    a["spans_title"] = [s for s in title_spans if s[2] in a["term_ids"]]
-    a["spans_sent"] = [s for s in sent_spans if s[2] in a["term_ids"]]
-
-
 def highlight(text, spans):
     """설명이 붙은 용어에 점선 밑줄을 칩니다."""
     out, pos = [], 0
@@ -152,12 +137,170 @@ def highlight(text, spans):
     return "".join(out)
 
 
-# ---------- 기사 수집 ----------
+# ---------- 문장 다루기 ----------
 
 def clean(text):
     text = re.sub(r"<[^>]+>", " ", text or "")
     return re.sub(r"\s+", " ", unescape(text)).strip()
 
+
+def strip_byline(text):
+    """'(서울=연합뉴스) 곽윤아 기자 =' 같은 앞머리를 지웁니다."""
+    for _ in range(2):
+        for rx in BYLINE_RES:
+            text = rx.sub("", text, count=1)
+    return text.strip()
+
+
+def split_sentences(text):
+    parts = re.split(r"(?<=[.!?])\s+|(?<=[.!?][\"”’'])\s+", text)
+    return [p.strip(" -·") for p in parts if p.strip(" -·")]
+
+
+def usable(s):
+    return 20 <= len(s) and not JUNK_RE.search(s)
+
+
+def count_words(s, words):
+    return sum(1 for w in words if w in s)
+
+
+def sentence_base_score(s, index):
+    """역할과 상관없는 일반 점수: 금융경제 핵심어, 용어, 숫자."""
+    score = 0
+    score += min(count_words(s, CORE), 3)
+    score += 2 * min(len({i for _, _, i in find_spans(s, index)}), 2) if index else 0
+    score += 1 if re.search(r"\d", s) else 0
+    return score
+
+
+def pick_points(sents, index):
+    """역할별로 문장을 고릅니다. 결과 → 원인 → 전망 → 수치·배경, 마지막에 기사 순서로 정렬."""
+    n = len(sents)
+    if n == 0:
+        return []
+    ok = [i for i, s in enumerate(sents) if usable(s)]
+    if not ok:
+        return []
+    short_ok = [i for i in ok if len(sents[i]) <= SENTENCE_MAX] or ok
+    chosen = []
+
+    def take(i):
+        if i is not None and i not in chosen and len(chosen) < SUMMARY_SENTENCES:
+            chosen.append(i)
+
+    # ① 결과: 처음에 나오는 쓸 만한 문장
+    take(short_ok[0])
+    # ② 원인: 원인 말이 든 문장 중 점수가 가장 높은 것 (앞쪽 문장을 조금 더 높게 봅니다)
+    cause = [i for i in short_ok if i not in chosen and count_words(sents[i], CAUSE)]
+    if cause:
+        take(max(cause, key=lambda i: (sentence_base_score(sents[i], index) + 2 * count_words(sents[i], CAUSE) - i * 0.1)))
+    # ③ 전망: 전망 말이 든 문장 중 점수가 가장 높은 것 (뒤쪽 문장을 조금 더 높게 봅니다)
+    outlook = [i for i in short_ok if i not in chosen and count_words(sents[i], OUTLOOK)]
+    if outlook:
+        take(max(outlook, key=lambda i: (sentence_base_score(sents[i], index) + 2 * count_words(sents[i], OUTLOOK) + i * 0.1)))
+    # ④ 수치·배경: 숫자가 2개 이상 든 문장 중 점수가 가장 높은 것
+    numeric = [i for i in short_ok if i not in chosen and len(re.findall(r"\d+(?:[.,]\d+)?", sents[i])) >= 2]
+    if numeric and len(chosen) >= 3:
+        take(max(numeric, key=lambda i: (sentence_base_score(sents[i], index), -i)))
+    # 역할 문장이 모자라면 일반 점수가 높은 문장으로 최소 개수를 채웁니다.
+    rest = [i for i in short_ok if i not in chosen]
+    rest.sort(key=lambda i: (-sentence_base_score(sents[i], index), i))
+    for i in rest:
+        if len(chosen) >= min(MIN_SENTENCES, len(short_ok)):
+            break
+        take(i)
+    return sorted(chosen)
+
+
+# ---------- 기사 본문 가져오기 ----------
+
+class TextExtractor(HTMLParser):
+    """HTML에서 본문 후보 줄을 뽑습니다."""
+    SKIP_TAGS = {"script", "style", "noscript", "svg", "iframe", "select", "button"}
+    LAYOUT_TAGS = {"nav", "footer", "header", "aside", "form", "figcaption"}
+    BLOCK = {"p", "div", "br", "li", "h1", "h2", "h3", "h4", "h5", "h6", "article", "section", "tr", "td", "ul", "ol"}
+
+    def __init__(self, skip_layout=True):
+        super().__init__(convert_charrefs=True)
+        self.skip = set(self.SKIP_TAGS) | (set(self.LAYOUT_TAGS) if skip_layout else set())
+        self.depth = 0
+        self.lines = [""]
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self.skip:
+            self.depth += 1
+        if tag in self.BLOCK:
+            self.lines.append("")
+
+    def handle_endtag(self, tag):
+        if tag in self.skip and self.depth:
+            self.depth -= 1
+        if tag in self.BLOCK:
+            self.lines.append("")
+
+    def handle_data(self, data):
+        if not self.depth:
+            self.lines[-1] += data
+
+
+def extract_body(html):
+    """기사 HTML에서 본문 텍스트를 뽑습니다. 못 뽑으면 빈 문자열."""
+    m = re.search(r'"articleBody"\s*:\s*"((?:[^"\\]|\\.)*)"', html)
+    if m:
+        try:
+            text = clean(json.loads('"' + m.group(1) + '"'))
+            if len(text) > MIN_BODY_CHARS:
+                return strip_byline(text)[:8000]
+        except Exception:
+            pass
+    for skip_layout in (True, False):
+        ex = TextExtractor(skip_layout)
+        try:
+            ex.feed(html)
+        except Exception:
+            continue
+        good, seen = [], set()
+        for line in ex.lines:
+            line = strip_byline(re.sub(r"\s+", " ", line).strip())  # 기자 이름 줄을 먼저 떼어 낸 뒤 검사합니다.
+            if len(line) < 30 or line in seen:
+                continue
+            if not re.search(r"[다요까함음됨][.!?\"”’']*$|[.!?][\"”’']?$", line):
+                continue  # 문장으로 끝나지 않는 줄(메뉴, 제목 목록)은 버립니다.
+            if JUNK_RE.search(line) and len(line) < 120:
+                continue
+            seen.add(line)
+            good.append(line)
+        text = " ".join(good)
+        if len(text) > MIN_BODY_CHARS:
+            return text[:8000]
+    return ""
+
+
+def fetch_body(url):
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            raw = resp.read(2_000_000)
+            charset = None
+            try:
+                charset = resp.headers.get_content_charset()
+            except Exception:
+                pass
+        for enc in (charset, "utf-8", "cp949"):
+            if not enc:
+                continue
+            try:
+                return extract_body(raw.decode(enc))
+            except (UnicodeDecodeError, LookupError):
+                continue
+        return extract_body(raw.decode("utf-8", errors="replace"))
+    except Exception as e:
+        print(f"[본문 실패] {url}: {e}")
+        return ""
+
+
+# ---------- 기사 수집 ----------
 
 def parse_time(value):
     try:
@@ -193,7 +336,7 @@ def read_feed(name, url):
             "source": name,
             "title": title,
             "link": link,
-            "desc": clean(it.findtext("description"))[:1500],
+            "desc": strip_byline(clean(it.findtext("description")))[:1500],
             "ts": parse_time(it.findtext("pubDate") or ""),
         })
         if len(items) >= PER_FEED:
@@ -214,6 +357,18 @@ def is_noise(a):
     return any(w in a["title"] for w in SKIP)
 
 
+def quick_terms(a, index):
+    """기사를 고르기 전에, 제목과 RSS 설명에 용어가 몇 개 있는지만 셉니다."""
+    if not index:
+        a["term_ids"] = []
+        return
+    ids = []
+    for _, _, i in find_spans(a["title"] + " " + a["desc"], index):
+        if i not in ids:
+            ids.append(i)
+    a["term_ids"] = ids[:MAX_TERMS]
+
+
 def score(a):
     """핵심어가 많을수록 높은 점수. '한국은행'과 '은행'처럼 겹치는 단어는 한 번만 셉니다."""
     words = [(w, 3, 2) for w in CORE] + [(w, 2, 1) for w in BOOST]
@@ -229,7 +384,7 @@ def score(a):
     return s + TERM_BONUS * len(a.get("term_ids", []))
 
 
-def pick_articles(all_items, data, index):
+def pick_articles(all_items, index):
     """동정·행사 기사를 빼고, 점수가 높은 순(같으면 최신 순)으로 고릅니다."""
     seen, pool = set(), []
     for a in all_items:
@@ -237,7 +392,7 @@ def pick_articles(all_items, data, index):
         if key in seen or is_noise(a):
             continue
         seen.add(key)
-        enrich(a, data, index)
+        quick_terms(a, index)
         pool.append(a)
     oldest = datetime.min.replace(tzinfo=KST)
     pool.sort(key=lambda a: (score(a), a["ts"] or oldest), reverse=True)
@@ -258,13 +413,43 @@ def pick_articles(all_items, data, index):
     return picked
 
 
+def summarize(a, index):
+    """고른 기사의 본문을 가져와 핵심 문장과 설명할 용어를 붙입니다."""
+    body = fetch_body(a["link"])
+    sents = split_sentences(body) if body else []
+    a["from_body"] = len(sents) >= MIN_SENTENCES
+    if not a["from_body"]:  # 본문을 못 가져왔으면 RSS 설명으로 대신합니다.
+        sents = split_sentences(a["desc"])
+    a["points"] = [sents[i] for i in pick_points(sents, index)]
+
+    title_spans = find_spans(a["title"], index) if index else []
+    point_spans = [find_spans(p, index) if index else [] for p in a["points"]]
+    ids = []
+    for spans in [title_spans] + point_spans:
+        for _, _, i in spans:
+            if i not in ids:
+                ids.append(i)
+    a["term_ids"] = ids[:MAX_TERMS]
+    keep = set(a["term_ids"])
+    a["spans_title"] = [s for s in title_spans if s[2] in keep]
+    a["spans_points"] = [[s for s in spans if s[2] in keep] for spans in point_spans]
+
+
 # ---------- 페이지 ----------
 
 def story_html(a, data):
     when = a["ts"].strftime("%m.%d %H:%M") if a["ts"] else ""
     link = escape(a["link"], quote=True)
     title = highlight(a["title"], a["spans_title"])
-    sentence = f'<p class="sum">{highlight(a["sentence"], a["spans_sent"])}</p>' if a["sentence"] else ""
+    items = "\n".join(
+        f"          <li>{highlight(p, sp)}</li>" for p, sp in zip(a["points"], a["spans_points"])
+    )
+    points = f'\n        <ul class="pts">\n{items}\n        </ul>' if a["points"] else ""
+    when_txt = f" {escape(when)}" if when else ""
+    source = (
+        f'<p class="src">{escape(a["source"])}{when_txt} 기사에서 가져온 문장이며, '
+        f'전체 내용은 <a href="{link}" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>'
+    )
     terms = ""
     if a["term_ids"]:
         rows = "\n".join(
@@ -282,9 +467,8 @@ def story_html(a, data):
     return f"""    <article class="story{solo}">
       <div class="main">
         <div class="meta"><span class="tag">{escape(a["source"])}</span><span class="when">{escape(when)}</span></div>
-        <h2><a href="{link}" target="_blank" rel="noopener">{title}</a></h2>
-        {sentence}
-        <p class="src"><a href="{link}" target="_blank" rel="noopener">원문 보기</a></p>
+        <h2><a href="{link}" target="_blank" rel="noopener">{title}</a></h2>{points}
+        {source}
       </div>{terms}
     </article>"""
 
@@ -353,12 +537,14 @@ h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; lett
 .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .tag { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); }
 .when { font: 400 12px/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
-h2 { margin: 10px 0 8px; font-size: 19px; line-height: 1.45; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { margin: 10px 0 10px; font-size: 19px; line-height: 1.45; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
 h2 a { color: inherit; text-decoration: none; }
 h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
-.sum { margin: 0; font-size: 15px; line-height: 1.8; max-width: 38em; }
+.pts { margin: 0; padding-left: 1.1em; max-width: 40em; }
+.pts li { margin: 0 0 8px; font-size: 15px; line-height: 1.8; }
+.pts li::marker { color: var(--muted); }
 .t { border-bottom: 1.5px dotted var(--accent); }
-.src { margin: 12px 0 0; font-size: 13px; }
+.src { margin: 12px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 .src a { color: var(--accent); text-underline-offset: 3px; }
 .terms { align-self: start; background: var(--tint); border-radius: 8px; padding: 14px 16px 6px; }
 .terms-h { margin: 0 0 10px; font: 500 12px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
@@ -382,12 +568,12 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
   <header class="head">
     <p class="date">__DATE__</p>
     <h1>경제뉴스 브리핑</h1>
-    <p class="lede">주요 언론사의 금융경제 기사를 매일 아침 모아 보여줍니다. 점선이 그어진 말은 기사 옆에서 쉽게 풀어 드립니다.</p>
+    <p class="lede">주요 언론사의 금융경제 기사에서 핵심 문장을 골라 매일 아침 모아 보여줍니다. 점선이 그어진 말은 기사 옆에서 쉽게 풀어 드립니다.</p>
   </header>
   <main class="sheet">
 __STORIES__
   </main>
-  <p class="foot">제목과 핵심 문장은 각 언론사 RSS가 제공하는 내용이고, 전체 기사는 원문 링크에서 볼 수 있습니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요. 투자 조언이 아닙니다.</p>
+  <p class="foot">기사 문장의 저작권은 각 언론사에 있습니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요. 투자 조언이 아닙니다.</p>
 </div>
 </body>
 </html>
@@ -405,16 +591,19 @@ def main():
     all_items = []
     for name, urls in FEEDS.items():
         all_items.extend(fetch_feed(name, urls))
-    articles = pick_articles(all_items, data, index)
+    articles = pick_articles(all_items, index)
     if not articles:
         # 기존 페이지를 지우지 않고 실패로 끝냅니다.
         print("가져온 기사가 없어 페이지를 만들지 않았습니다.")
         sys.exit(1)
+    for a in articles:
+        summarize(a, index)
     OUT.write_text(build_page(articles, data, datetime.now(KST)), encoding="utf-8")
     print(f"{OUT.name} 생성 완료 ({len(articles)}건, 용어집 {len(data)}개)")
     for a in articles:
         names = ", ".join(data[i]["name"] for i in a["term_ids"]) or "-"
-        print(f"  [{score(a)}점] {a['source']} | {a['title']} | 용어: {names}")
+        how = "본문" if a["from_body"] else "RSS"
+        print(f"  [{score(a)}점/{how}/{len(a['points'])}문장] {a['source']} | {a['title']} | 용어: {names}")
 
 
 if __name__ == "__main__":
