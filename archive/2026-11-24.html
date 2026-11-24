@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026.11.24 (화) 경제뉴스 브리핑</title>
+<meta name="description" content="매일 아침 갱신되는 주요 금융·경제 뉴스와 쉬운 용어 풀이">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f1f4f7;
+  --surface: #ffffff;
+  --tint: #eef3f6;
+  --fg: #15202b;
+  --muted: #566473;
+  --line: #d9e0e7;
+  --accent: #0d6b73;
+  --blue: #1a5fd0;
+  --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #000000;
+    --surface: #121212;
+    --tint: #1c1c1c;
+    --fg: #f2f2f2;
+    --muted: #a6a6a6;
+    --line: #333333;
+    --accent: #ffffff;
+    --blue: #ffffff;
+    --mark: #4a4a4a;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  padding: 28px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px));
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.wrap { max-width: 980px; margin: 0 auto; }
+.head { padding: 0 4px 20px; }
+.date { margin: 0 0 10px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
+h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.7; max-width: 38em; }
+.nav { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 14px 0 0; font-size: 14px; }
+.nav a, .src a { color: var(--accent); text-underline-offset: 3px; }
+.filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 4px 14px; }
+.filter button {
+  font: 500 13px/1 var(--font-body); color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer;
+}
+.filter button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px 24px; }
+.story {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 16px 32px;
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+.story:first-child { border-top: 0; }
+.story[hidden] { display: none; }
+.story.solo { grid-template-columns: minmax(0, 1fr); }
+.main, .terms { min-width: 0; }
+.meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.tag { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); }
+.chip-tag { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+.when { margin-left: auto; font: 400 12px/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
+h2 { margin: 10px 0 10px; font-size: 19px; line-height: 1.45; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+h2 a { color: inherit; text-decoration: none; }
+h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.pts { margin: 0; padding-left: 1.1em; max-width: 40em; }
+.pts li { margin: 0 0 8px; font-size: 15px; line-height: 1.8; }
+.pts li::marker { color: var(--muted); }
+.t { color: var(--blue); font-weight: 700; }
+.why { margin: 12px 0 0; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--tint); border-radius: 0 8px 8px 0; max-width: 40em; }
+.why p { margin: 0; font-size: 14.5px; line-height: 1.75; }
+.why .why-h { margin-bottom: 2px; font-size: 12.5px; font-weight: 700; color: var(--accent); }
+.src { margin: 12px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+.terms { align-self: start; background: var(--tint); border-radius: 8px; padding: 14px 16px 6px; }
+.terms-h { margin: 0 0 10px; font: 500 12px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
+.terms dl { margin: 0; }
+.terms dt { font-size: 14px; font-weight: 700; color: var(--blue); }
+.terms dd { margin: 2px 0 12px; font-size: 14px; line-height: 1.7; }
+.empty { margin: 0; padding: 24px 0; color: var(--muted); font-size: 14px; }
+.month { margin: 0; padding: 22px 0 6px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); border-top: 1px solid var(--line); }
+.month:first-child { border-top: 0; }
+.day { padding: 10px 0 14px; }
+.day h3 { margin: 0 0 4px; font-size: 16px; }
+.day h3 a { color: var(--accent); text-underline-offset: 3px; }
+.day ul { margin: 0; padding-left: 1.1em; color: var(--muted); font-size: 14px; line-height: 1.75; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.foot { margin: 18px 4px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+@media (max-width: 720px) {
+  .story { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  h1 { font-size: 26px; }
+  h2 { font-size: 17px; }
+  .sheet { padding: 2px 16px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="head">
+    <p class="date">2026.11.24 (화) 브리핑</p>
+    <h1>경제뉴스 브리핑</h1>
+    <p class="lede">주요 언론사의 금융경제 기사를 매일 아침 골라 정리합니다. 파란색으로 표시된 말은 기사 옆에서 쉽게 풀어 드립니다.</p>
+    <nav class="nav"><a href="index.html">← 지난 브리핑 목록</a><a href="../index.html">오늘 브리핑</a></nav>
+  </header>
+  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="금리" aria-pressed="false">금리</button><button type="button" data-tag="증시" aria-pressed="false">증시</button><button type="button" data-tag="금융" aria-pressed="false">금융</button></div>
+  <main class="sheet">
+    <article class="story" data-tags="증시">
+      <div class="main">
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">증시</span><span class="when">11.24 18:00</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124160700011" target="_blank" rel="noopener">[연합뉴스 이 시각 헤드라인] - 18:00</a></h2>
+        <p class="src">연합뉴스 11.24 18:00 기사입니다. 내용은 <a href="https://www.yna.co.kr/view/AKR20261124160700011" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
+      </div>
+      <aside class="terms" aria-label="용어 풀이">
+        <p class="terms-h">용어 풀이</p>
+        <dl>
+          <dt>주가지수</dt>
+          <dd>여러 종목 주가를 하나로 묶어 시장 전체의 흐름을 보여주는 수치입니다. 코스피가 대표적입니다.</dd>
+          <dt>디지털자산</dt>
+          <dd>디지털 형태로 존재하고 거래될 수 있는 자산을 넓게 부르는 말입니다. 가상자산, 토큰 등을 포함하는 개념으로 쓰입니다.</dd>
+        </dl>
+      </aside>
+    </article>
+    <article class="story" data-tags="증시">
+      <div class="main">
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">증시</span><span class="when">11.24 17:04</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124158000008" target="_blank" rel="noopener">에코프로비엠 &quot;종속회사 에코프로글로벌 주식 6천222억원에 추가취득&quot;</a></h2>
+        <p class="src">연합뉴스 11.24 17:04 기사입니다. 내용은 <a href="https://www.yna.co.kr/view/AKR20261124158000008" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
+      </div>
+      <aside class="terms" aria-label="용어 풀이">
+        <p class="terms-h">용어 풀이</p>
+        <dl>
+          <dt>상장</dt>
+          <dd>기업의 주식이 거래소에서 누구나 사고팔 수 있도록 등록되는 것입니다. 기업은 이를 통해 일반 투자자에게서 자금을 모을 수 있습니다.</dd>
+        </dl>
+      </aside>
+    </article>
+    <article class="story" data-tags="금리|증시">
+      <div class="main">
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">금리</span><span class="chip-tag">증시</span><span class="when">11.24 17:02</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124153751008" target="_blank" rel="noopener"><span class="t">국고채</span> <span class="t">금리</span> 혼조세…코스피 상승 속 외인 선물 매수(종합)</a></h2>
+        <p class="src">연합뉴스 11.24 17:02 기사입니다. 내용은 <a href="https://www.yna.co.kr/view/AKR20261124153751008" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
+      </div>
+      <aside class="terms" aria-label="용어 풀이">
+        <p class="terms-h">용어 풀이</p>
+        <dl>
+          <dt>국채</dt>
+          <dd>정부가 필요한 돈을 마련하려고 발행하는 채권입니다. 안전한 자산으로 여겨져 금리의 기준이 됩니다.</dd>
+          <dt>금리</dt>
+          <dd>돈을 빌리거나 맡길 때 붙는 이자의 비율입니다. 예를 들어 100만 원을 연 3%로 빌리면 1년 이자는 3만 원입니다.</dd>
+          <dt>한국은행</dt>
+          <dd>우리나라의 중앙은행입니다. 기준금리를 정하고 화폐를 발행하며 물가와 금융의 안정을 지키는 일을 맡습니다.</dd>
+          <dt>금융통화위원회</dt>
+          <dd>한국은행에서 기준금리를 비롯한 통화정책의 중요한 사항을 결정하는 최고 의사결정 기구입니다.</dd>
+        </dl>
+      </aside>
+    </article>
+    <article class="story" data-tags="금리">
+      <div class="main">
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">금리</span><span class="when">11.24 16:41</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124153700008" target="_blank" rel="noopener">국고채 금리 대체로 하락…3년물 연 3.640%</a></h2>
+        <p class="src">연합뉴스 11.24 16:41 기사입니다. 내용은 <a href="https://www.yna.co.kr/view/AKR20261124153700008" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
+      </div>
+      <aside class="terms" aria-label="용어 풀이">
+        <p class="terms-h">용어 풀이</p>
+        <dl>
+          <dt>채권시장</dt>
+          <dd>국가나 기업이 돈을 빌리려고 발행한 채권을 사고파는 시장입니다. 장기 자금을 조달하는 통로가 됩니다.</dd>
+        </dl>
+      </aside>
+    </article>
+    <article class="story" data-tags="금융|증시">
+      <div class="main">
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">금융</span><span class="chip-tag">증시</span><span class="when">11.24 16:31</span></div>
+        <h2><a href="https://www.yna.co.kr/view/AKR20261124151500008" target="_blank" rel="noopener">다올투자증권 &quot;계열사 다올<span class="t">저축은행</span> 주식 222억원에 추가취득&quot;</a></h2>
+        <p class="src">연합뉴스 11.24 16:31 기사입니다. 내용은 <a href="https://www.yna.co.kr/view/AKR20261124151500008" target="_blank" rel="noopener">원문</a>에서 볼 수 있습니다.</p>
+      </div>
+      <aside class="terms" aria-label="용어 풀이">
+        <p class="terms-h">용어 풀이</p>
+        <dl>
+          <dt>저축은행</dt>
+          <dd>일반 은행보다 규모가 작고 주로 서민과 중소기업을 상대로 예금과 대출을 하는 금융회사입니다. 예금 금리는 대체로 높은 편입니다.</dd>
+        </dl>
+      </aside>
+    </article>
+  </main>
+  <p class="foot">기사 문장의 저작권은 각 언론사에 있습니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요. 투자 조언이 아닙니다.</p>
+</div>
+<script>
+(function () {
+  var bar = document.querySelector(".filter");
+  if (!bar) return;
+  var stories = document.querySelectorAll(".story");
+  function apply(tag) {
+    stories.forEach(function (s) {
+      var tags = (s.getAttribute("data-tags") || "").split("|");
+      s.hidden = tag !== "" && tags.indexOf(tag) < 0;
+    });
+    bar.querySelectorAll("button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-tag") === tag));
+    });
+  }
+  bar.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (b) apply(b.getAttribute("data-tag"));
+  });
+})();
+</script>
+</body>
+</html>
