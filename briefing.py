@@ -980,29 +980,38 @@ body {
   word-break: keep-all;
   overflow-wrap: break-word;
 }
-.layout { display: flex; gap: 28px; align-items: flex-start; max-width: 1268px; margin: 0 auto; }
-.side { width: 260px; flex-shrink: 0; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
-.wrap { flex: 1; min-width: 0; max-width: 980px; margin: 0; }
-.menu { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px 12px; font-size: 14.5px; }
+.page { max-width: 1268px; margin: 0 auto; }
+.brand { margin: 0 4px 14px; font-size: 15px; font-weight: 700; letter-spacing: 0.02em; }
+.brand a { color: var(--accent); text-decoration: none; }
+.layout { display: flex; gap: 24px; align-items: flex-start; }
+.side { width: 290px; flex-shrink: 0; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+.wrap { flex: 1; min-width: 0; margin: 0; }
+.menu { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; font-size: 15px; }
 .menu summary { list-style: none; cursor: pointer; }
 .menu summary::-webkit-details-marker { display: none; }
-.menu-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 8px 12px; font-weight: 700; color: var(--accent); font-size: 16px; }
-.menu-bar .short, .menu-bar .btn { display: none; }
-.menu-bar .btn { font-size: 13px; font-weight: 500; border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; }
+.menu-bar { display: none; justify-content: space-between; align-items: center; min-height: 44px; font-weight: 700; color: var(--accent); font-size: 16px; }
+.menu-bar .btn { font-size: 13px; font-weight: 500; border: 1px solid var(--accent); border-radius: 999px; padding: 4px 14px; }
+.menu-body { display: flex; flex-direction: column; gap: 10px; }
 .menu ul { list-style: none; margin: 0; padding: 0; }
-.menu details > ul, .menu details > details { margin-left: 8px; }
-.grp > summary, .sub > summary, .yr > summary, .mn > summary { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-radius: 8px; }
-.grp > summary { font-weight: 700; margin-top: 4px; }
-.grp > summary::after, .sub > summary::after, .yr > summary::after, .mn > summary::after { content: "▸"; color: var(--muted); font-size: 12px; }
-.grp[open] > summary::after, .sub[open] > summary::after, .yr[open] > summary::after, .mn[open] > summary::after { content: "▾"; }
-.grp[open] > summary { background: var(--tint); }
-.sub > summary { font-weight: 500; }
-.yr > summary, .mn > summary { font-size: 14px; }
-.mn small { margin-left: 6px; color: var(--muted); font-weight: 400; }
-.menu a { display: block; padding: 7px 10px; border-radius: 8px; color: var(--fg); text-decoration: none; }
+.grp { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--tint); }
+.grp[open] { background: var(--surface); }
+.grp > summary { display: flex; justify-content: space-between; align-items: center; min-height: 52px; padding: 0 16px; font-size: 17px; font-weight: 700; }
+.grp[open] > summary { background: var(--accent); color: var(--surface); }
+.grp > summary::after, .sub > summary::after, .yr > summary::after { content: "▸"; font-size: 13px; color: var(--muted); }
+.grp[open] > summary::after { content: "▾"; color: var(--surface); }
+.sub[open] > summary::after, .yr[open] > summary::after { content: "▾"; }
+.grp > ul { margin: 8px 8px 10px 20px; padding-left: 10px; border-left: 2px solid var(--line); }
+.sub > summary { display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; font-size: 15px; font-weight: 500; }
+.sub > summary:hover, .yr > summary:hover { background: var(--tint); }
+.tree { margin: 2px 0 6px 10px; padding-left: 10px; border-left: 2px solid var(--line); font-size: 14px; }
+.yr > summary { display: flex; justify-content: space-between; align-items: center; min-height: 40px; padding: 0 10px; border-radius: 8px; font-weight: 500; }
+.months { margin: 0 0 4px 8px; padding-left: 10px; border-left: 2px solid var(--line); }
+.menu a { display: flex; align-items: center; justify-content: space-between; min-height: 40px; padding: 0 12px; border-radius: 8px; color: var(--fg); text-decoration: none; font-size: 15px; }
+.tree a { min-height: 38px; font-size: 14px; }
 .menu a:hover { background: var(--tint); }
-.menu a[aria-current="page"] { background: var(--accent); color: var(--surface); font-weight: 500; }
-.mn ul a { padding: 5px 10px; font-size: 14px; }
+.menu a.here { font-weight: 700; color: var(--accent); }
+.menu a[aria-current="page"] { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent); font-weight: 700; }
+.menu small { font-size: 12px; font-weight: 400; color: var(--muted); }
 .menu-empty { margin: 6px 10px; font-size: 13px; color: var(--muted); }
 h2.sec { margin: 24px 0 0; padding: 0 0 10px; font-size: 15px; letter-spacing: 0.02em; color: var(--accent); border-bottom: 1px solid var(--line); }
 h2.sec:first-child { margin-top: 14px; }
@@ -1018,7 +1027,7 @@ h2.sec:first-child { margin-top: 14px; }
 .auto li { margin: 0 0 3px; }
 .auto li a { color: var(--fg); text-underline-offset: 3px; }
 .auto summary { cursor: pointer; color: var(--accent); }
-.head { padding: 0 4px 20px; }
+.head { padding: 0 4px 16px; }
 .date { margin: 0 0 10px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
 h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
 .lede { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.7; max-width: 38em; }
@@ -1081,11 +1090,12 @@ h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .foot { margin: 18px 4px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 @media (max-width: 860px) {
-  .layout { flex-direction: column; gap: 14px; }
-  .side { width: 100%; position: static; max-height: none; overflow: visible; }
-  .wrap { width: 100%; }
-  .menu-bar .long { display: none; }
-  .menu-bar .short, .menu-bar .btn { display: inline; }
+  .page { display: flex; flex-direction: column; }
+  .layout { display: contents; }
+  .brand { display: none; }
+  .side { order: -1; width: 100%; position: static; max-height: none; overflow: visible; margin-bottom: 14px; }
+  .menu-bar { display: flex; }
+  .menu[open] > .menu-bar { margin-bottom: 8px; }
 }
 @media (max-width: 720px) {
   .story { grid-template-columns: minmax(0, 1fr); }
@@ -1098,9 +1108,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 </style>
 </head>
 <body>
-<div class="layout">
-<aside class="side">__MENU__</aside>
-<div class="wrap">
+<div class="page">
+  <p class="brand"><a href="__HOME__">경제 뉴스 브리핑 및 분석</a></p>
   <header class="head">
     <p class="date">__DATE__</p>
     <h1>__H1__</h1>
@@ -1108,12 +1117,16 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
     <nav class="nav">__NAV__</nav>
   </header>
 __FILTER__
-  <main class="sheet">
+  <div class="layout">
+    <aside class="side">__MENU__</aside>
+    <div class="wrap">
+      <main class="sheet">
 __TOP__
 __STORIES__
-  </main>
-  <p class="foot">__FOOT__</p>
-</div>
+      </main>
+      <p class="foot">__FOOT__</p>
+    </div>
+  </div>
 </div>
 __SCRIPT__
 </body>
@@ -1255,7 +1268,7 @@ def page_html(records, title, date_label, nav, stories=None, lede=None, site=Non
     note = AI_NOTE if (site["always_note"] or any(r.get("ai") for r in records)) else ""
     foot = (note + " " if note else "") + site["foot"]
     full_title = title if BRAND in title else f"{title} · {BRAND}"
-    return (TEMPLATE.replace("__MENU__", menu_html(depth, active))
+    return (TEMPLATE.replace("__MENU__", menu_html(depth, active)).replace("__HOME__", "../" * depth + "index.html")
             .replace("__TITLE__", escape(full_title)).replace("__DESC__", escape(site["desc"]))
             .replace("__H1__", escape(site["name"])).replace("__DATE__", escape(date_label))
             .replace("__LEDE__", lede).replace("__NAV__", nav).replace("__FILTER__", filt)
@@ -1448,55 +1461,56 @@ def refresh_menu():
 
 
 def menu_html(depth, active):
-    """모든 페이지 왼쪽(휴대폰은 위쪽)에 넣는 펼침식 메뉴. active는 지금 보고 있는 위치입니다."""
+    """모든 페이지에 넣는 펼침식 메뉴(컴퓨터는 왼쪽, 휴대폰은 위쪽). active는 지금 보고 있는 위치입니다.
+    지난 뉴스 보기는 연도 → 월까지만 두고, 월을 누르면 그달의 일별 목록 페이지로 갑니다."""
     up = "../" * depth
 
     def link(href, text, key):
         cur = ' aria-current="page"' if key == active else ""
         return f'<a href="{up}{href}"{cur}>{text}</a>'
 
-    def tree(days, base, prefix, month_pages):
-        cur_day = active.split(":", 1)[1] if active.startswith(prefix + "-day:") else ""
+    def tree(days, prefix, month_href):
+        kind, _, val = active.partition(":")
+        cur_month = val[:7] if kind in (f"{prefix}-day", f"{prefix}-month") else ""
         by_year = {}
         for d in days:
             by_year.setdefault(d[:4], {}).setdefault(d[:7], []).append(d)
-        out = []
+        folder = "archive" if prefix == "main" else "jb/archive"
+        out = [link(f"{folder}/index.html", "전체 목록", f"{prefix}-archive")]
         for y in sorted(by_year, reverse=True):
-            months = []
+            items = []
             for m in sorted(by_year[y], reverse=True):
-                items = []
-                if month_pages:
-                    items.append("<li>" + link(f"jb/month/{m}.html", "이달 정리", f"jb-month:{m}") + "</li>")
-                for d in sorted(by_year[y][m], reverse=True):
-                    dt = datetime.strptime(d, "%Y-%m-%d")
-                    items.append("<li>" + link(f"{base}/{d}.html", f"{dt.day}일 ({WEEKDAYS[dt.weekday()]})",
-                                               f"{prefix}-day:{d}") + "</li>")
-                m_open = " open" if cur_day[:7] == m or active == f"jb-month:{m}" else ""
-                months.append(f'<details class="mn"{m_open}><summary>{int(m[5:])}월 <small>{len(by_year[y][m])}일</small></summary>'
-                              f'<ul>{"".join(items)}</ul></details>')
-            y_open = " open" if cur_day[:4] == y or active.startswith("jb-month:" + y) else ""
-            out.append(f'<details class="yr"{y_open}><summary>{y}년</summary>{"".join(months)}</details>')
-        return "".join(out) or '<p class="menu-empty">아직 기록이 없습니다.</p>'
+                is_cur = active == f"{prefix}-month:{m}"
+                cls = ' class="here"' if (cur_month == m and not is_cur) else ""
+                cur = ' aria-current="page"' if is_cur else ""
+                items.append(f'<a href="{up}{month_href(m)}"{cls}{cur}><span>{int(m[5:])}월</span>'
+                             f'<small>{len(by_year[y][m])}일</small></a>')
+            y_open = " open" if cur_month[:4] == y else ""
+            out.append(f'<details class="yr"{y_open}><summary>{y}년</summary>'
+                       f'<div class="months">{"".join(items)}</div></details>')
+        if not by_year:
+            out.append('<p class="menu-empty">아직 기록이 없습니다.</p>')
+        return "".join(out)
 
-    def news_group(title, prefix, home, base, days, month_pages):
-        g_open = " open" if active.startswith(prefix) else ""
-        s_open = " open" if active in (f"{prefix}-archive",) or active.startswith(f"{prefix}-day:") or active.startswith("jb-month:") and prefix == "jb" else ""
+    def news_group(title, prefix, home, days, month_href):
+        g_open = " open" if active.startswith(prefix + "-") else ""
+        s_open = " open" if (active == f"{prefix}-archive" or active.startswith(f"{prefix}-day:")
+                             or active.startswith(f"{prefix}-month:")) else ""
         return (f'<details class="grp"{g_open}><summary>{title}</summary><ul>'
                 f'<li>{link(home, "오늘의 뉴스", prefix + "-home")}</li>'
                 f'<li><details class="sub"{s_open}><summary>지난 뉴스 보기</summary>'
-                f'<ul><li>{link(base + "/index.html", "전체 목록", prefix + "-archive")}</li></ul>'
-                f'{tree(days, base, prefix, month_pages)}</details></li></ul></details>')
+                f'<div class="tree">{tree(days, prefix, month_href)}</div></details></li></ul></details>')
 
     a_open = " open" if active.startswith("analysis") else ""
-    return (f'<details class="menu" id="menu" open>'
-            f'<summary class="menu-bar"><span class="long">{BRAND}</span><span class="short">경제 뉴스 브리핑·분석</span>'
-            f'<span class="btn">메뉴</span></summary>'
-            + news_group("주요 경제 뉴스", "main", "index.html", "archive", MENU_CTX["main"], False)
-            + news_group("전북 경제 뉴스", "jb", "jb/index.html", "jb/archive", MENU_CTX["jb"], True)
+    return ('<details class="menu" id="menu" open>'
+            '<summary class="menu-bar"><span>경제 뉴스 브리핑·분석</span><span class="btn">메뉴</span></summary>'
+            '<div class="menu-body">'
+            + news_group("주요 경제 뉴스", "main", "index.html", MENU_CTX["main"], lambda m: f"archive/month/{m}.html")
+            + news_group("전북 경제 뉴스", "jb", "jb/index.html", MENU_CTX["jb"], lambda m: f"jb/month/{m}.html")
             + f'<details class="grp"{a_open}><summary>나의 월간 분석</summary><ul>'
               f'<li>{link("analysis/economy.html", "경제 분석", "analysis-economy")}</li>'
               f'<li>{link("analysis/local.html", "지역 경제 분석", "analysis-local")}</li></ul></details>'
-            + '</details>')
+            + '</div></details>')
 
 
 MENU_SCRIPT = """<script>
@@ -1507,6 +1521,12 @@ MENU_SCRIPT = """<script>
   function sync() { menu.open = wide.matches; }
   sync();
   menu.querySelector(".menu-bar").addEventListener("click", function (e) { if (wide.matches) e.preventDefault(); });
+  // 지금 보는 위치가 속한 칸은 접속하자마자 펼칩니다.
+  var cur = menu.querySelector('a[aria-current="page"], a.here');
+  if (cur) {
+    var d = cur.parentElement;
+    while (d && d !== menu) { if (d.tagName === "DETAILS") d.open = true; d = d.parentElement; }
+  }
   var groups = menu.querySelectorAll(".grp");
   groups.forEach(function (g) {
     g.addEventListener("toggle", function () {
@@ -1517,6 +1537,36 @@ MENU_SCRIPT = """<script>
   if (wide.addEventListener) wide.addEventListener("change", sync);
 })();
 </script>"""
+
+
+def rebuild_main_months():
+    """주요 경제 뉴스의 월별 페이지(archive/month/YYYY-MM.html): 그달의 일별 목록과 분야별 건수."""
+    site = SITE_MAIN
+    out = ARCHIVE / "month"
+    out.mkdir(parents=True, exist_ok=True)
+    days = load_archive(ARCHIVE)
+    keys = sorted(days)
+    months = sorted({d[:7] for d in keys})
+    for n, m in enumerate(months):
+        mdays = [d for d in keys if d[:7] == m]
+        recs = [r for d in mdays for r in days[d]]
+        counts = tag_counts_of(recs)
+        summary = " · ".join(f"{t} {counts[t]}" for t in site["all_tags"] if t in counts)
+        parts = [f'    <p class="counts">기사 {len(recs)}건 · 분야별 {escape(summary)}</p>',
+                 list_html(days, list(reversed(mdays)), lambda d: f"../{d}.html", show_month=False)]
+        links = ['<a href="../index.html">← 지난 뉴스 목록</a>', '<a href="../../index.html">오늘의 뉴스</a>']
+        if n > 0:
+            links.append(f'<a href="{months[n - 1]}.html">← 이전 달</a>')
+        if n < len(months) - 1:
+            links.append(f'<a href="{months[n + 1]}.html">다음 달 →</a>')
+        links.append(f'<a href="../../analysis/economy.html#{m}">이달의 경제 분석 →</a>')
+        label = month_label(m)
+        html = page_html([], f"{label} 정리 · {site['name']}", f"{label} 월별 정리", "".join(links),
+                         stories="\n".join(parts),
+                         lede="날짜별로 정리한 그달의 기사입니다. 날짜나 제목을 누르면 그날의 기사 전체를 볼 수 있습니다.",
+                         site=site, tag_counts=counts, depth=2, active=f"main-month:{m}")
+        (out / f"{m}.html").write_text(html, encoding="utf-8")
+    return len(months)
 
 
 # ---------- 전북 경제 뉴스 ----------
@@ -1795,7 +1845,8 @@ def main():
         OUT.write_text(page_html(records, SITE_MAIN["name"], date_label, nav, depth=0, active="main-home"),
                        encoding="utf-8")
         print(f"{OUT.name} 생성 완료 ({len(records)}건)")
-    days = rebuild_archive(SITE_MAIN)
+    days = rebuild_archive(SITE_MAIN, month_href=lambda m: f"month/{m}.html")
+    rebuild_main_months()
     print(f"주요 경제 뉴스 보관 {days}일")
 
     try:
