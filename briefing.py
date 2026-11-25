@@ -36,7 +36,7 @@ FEEDS = {
     ],
 }
 
-TOP_N = 5               # 보여줄 기사 수
+TOP_N = 4               # 보여줄 기사 수
 PER_FEED = 20           # 출처마다 살펴볼 최신 기사 수
 MAX_PER_SOURCE = 4      # 한 출처에서 뽑을 최대 기사 수 (한 곳에 쏠리는 것만 막습니다)
 SUMMARY_SENTENCES = 4   # 기사마다 보여줄 문장 수 (최대). 공개할 때는 2~3으로 줄이는 것을 권합니다.
@@ -73,6 +73,8 @@ JB_FEEDS = {
 }
 JB_MAX_AGE_HOURS = 48       # 이보다 오래된 기사는 고르지 않습니다.
 JB_CANDIDATES = 6           # AI 요약이 안 되면 다음 후보로 넘어갑니다(최대 이만큼 시도).
+JB_LOCAL_N = 3              # 하루에 싣는 전북 지역경제 기사 수(최대)
+JB_BANK_N = 1               # 하루에 싣는 전북은행·JB금융 기사 수(최대, 있는 날만)
 JB_ORG = ["전북은행", "JB금융", "JB우리캐피탈", "JB자산운용"]
 JB_PLACE = ["전북", "전라북도", "전주", "군산", "익산", "정읍", "남원", "김제", "완주", "진안", "무주",
             "장수", "임실", "순창", "고창", "부안", "새만금"]
@@ -89,7 +91,8 @@ JB_SKIP = [
 ]
 JB_TAGS_AI = ["지역 산업", "일자리", "소상공인", "농업·새만금", "인구·지역", "부동산", "금융", "실적·경영", "경제"]
 JB_ORG_TAG = "전북은행 관련"
-JB_TAGS = [JB_ORG_TAG] + JB_TAGS_AI
+JB_LOCAL_TAG = "지역경제"
+JB_TAGS = [JB_ORG_TAG, JB_LOCAL_TAG] + JB_TAGS_AI
 JB_TAG_KEYS = {
     "지역 산업": ["산업", "기업", "공장", "제조", "유치", "이차전지", "수소", "탄소", "재생에너지", "투자"],
     "일자리": ["일자리", "고용", "취업", "채용", "청년", "실업", "임금"],
@@ -771,24 +774,25 @@ JB_GENERIC_WHY = {
     "금융": "지역 금융기관의 대출과 예금, 보증은 지역 기업과 가계가 돈을 구하는 길입니다. 금융 여건이 바뀌면 지역 경제 활동도 영향을 받습니다.",
     "실적·경영": "금융회사와 기업의 실적, 경영 전략은 대출 여력과 건전성, 일자리로 이어져 지역 고객과 주민에게도 영향을 줍니다.",
     "경제": "지역 경제 소식은 일자리, 물가, 소득처럼 주민 생활과 이어져 있습니다.",
+    "지역경제": "지역 경제 소식은 일자리, 물가, 소득처럼 주민 생활과 이어져 있습니다.",
 }
 
 # 사이트 설정: 경제 뉴스 정리(main)와 전북 경제 소식(jb)이 같은 코드로 만들어집니다.
 SITE_MAIN = {
-    "key": "main", "name": "경제 뉴스 정리", "out": OUT, "archive": ARCHIVE,
+    "key": "main", "name": "주요 경제 뉴스", "out": OUT, "archive": ARCHIVE,
     "all_tags": TAGS, "ai_tags": TAGS, "tag_keys": TAG_KEYS, "generic_why": GENERIC_WHY,
     "why_line": WHY_MAIN,
     "why_rule": '경제를 처음 배우는 대학 신입생에게 "이 소식이 왜 중요한지"를 알려 주는 해설을 1~2문장으로 쓰세요. 우리 생활이나 경제에 어떤 영향을 주는지 설명하세요.',
     "org_words": [], "org_tag": "",
-    "desc": "매일 아침 갱신되는 주요 금융·경제 뉴스와 쉬운 용어 풀이",
+    "desc": "매일 아침 갱신되는 주요 금융·경제 뉴스 4건과 쉬운 용어 풀이",
 }
 SITE_JB = {
-    "key": "jb", "name": "전북 경제 소식", "out": JB_DIR / "index.html", "archive": JB_ARCHIVE,
+    "key": "jb", "name": "전북 경제 뉴스", "out": JB_DIR / "index.html", "archive": JB_ARCHIVE,
     "all_tags": JB_TAGS, "ai_tags": JB_TAGS_AI, "tag_keys": JB_TAG_KEYS, "generic_why": JB_GENERIC_WHY,
     "why_line": WHY_JB,
     "why_rule": '경제를 처음 배우는 사람에게 "이 소식이 전북 지역 경제와 주민 생활, 지역 금융에 왜 중요한지"를 알려 주는 해설을 1~2문장으로 쓰세요. 어떤 영향을 주는지 설명하세요.',
-    "org_words": JB_ORG, "org_tag": JB_ORG_TAG,
-    "desc": "전북은행·JB금융과 전북 지역경제 소식을 하루 한 건씩 정리합니다",
+    "org_words": JB_ORG, "org_tag": JB_ORG_TAG, "local_tag": JB_LOCAL_TAG,
+    "desc": "전북 지역경제 소식과 전북은행·JB금융 소식을 매일 정리합니다",
 }
 
 
@@ -827,12 +831,15 @@ def summarize(a, index, explained, site=None, allow_fallback=True):
         a["tags"] = classify_tags(a["headline"] + " " + a["headline"] + " " + " ".join(a["points"]), site["tag_keys"])
     if site["org_words"] and any(w in (a["title"] + " " + a["desc"] + " " + (body or "")) for w in site["org_words"]):
         a["tags"] = [site["org_tag"]] + [t for t in a["tags"] if t != site["org_tag"]][:1]
+    elif site.get("local_tag"):
+        a["tags"] = [site["local_tag"]] + [t for t in a["tags"] if t != site["local_tag"]][:1]
 
     if not a.get("why"):  # '왜 중요할까요?'는 모든 기사에 넣습니다: AI에게 따로 부탁하고, 안 되면 분야별 기본 해설.
         a["why"] = ai_why(a, body or a["desc"], site)
         if not a["why"]:
-            a["why"] = site["generic_why"].get(a["tags"][0], site["generic_why"]["경제"])
-            print(f"[해설 기본문] {a['source']} | {a['headline'][:30]} → {a['tags'][0]}")
+            gtag = next((t for t in a["tags"] if t in site["generic_why"] and t != site.get("local_tag")), a["tags"][0])
+            a["why"] = site["generic_why"].get(gtag, site["generic_why"]["경제"])
+            print(f"[해설 기본문] {a['source']} | {a['headline'][:30]} → {gtag}")
 
     title_spans = find_spans(a["headline"], index) if index else []
     point_spans = [find_spans(p, index) if index else [] for p in a["points"]]
@@ -973,7 +980,44 @@ body {
   word-break: keep-all;
   overflow-wrap: break-word;
 }
-.wrap { max-width: 980px; margin: 0 auto; }
+.layout { display: flex; gap: 28px; align-items: flex-start; max-width: 1268px; margin: 0 auto; }
+.side { width: 260px; flex-shrink: 0; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+.wrap { flex: 1; min-width: 0; max-width: 980px; margin: 0; }
+.menu { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px 12px; font-size: 14.5px; }
+.menu summary { list-style: none; cursor: pointer; }
+.menu summary::-webkit-details-marker { display: none; }
+.menu-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 8px 12px; font-weight: 700; color: var(--accent); font-size: 16px; }
+.menu-bar .short, .menu-bar .btn { display: none; }
+.menu-bar .btn { font-size: 13px; font-weight: 500; border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; }
+.menu ul { list-style: none; margin: 0; padding: 0; }
+.menu details > ul, .menu details > details { margin-left: 8px; }
+.grp > summary, .sub > summary, .yr > summary, .mn > summary { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-radius: 8px; }
+.grp > summary { font-weight: 700; margin-top: 4px; }
+.grp > summary::after, .sub > summary::after, .yr > summary::after, .mn > summary::after { content: "▸"; color: var(--muted); font-size: 12px; }
+.grp[open] > summary::after, .sub[open] > summary::after, .yr[open] > summary::after, .mn[open] > summary::after { content: "▾"; }
+.grp[open] > summary { background: var(--tint); }
+.sub > summary { font-weight: 500; }
+.yr > summary, .mn > summary { font-size: 14px; }
+.mn small { margin-left: 6px; color: var(--muted); font-weight: 400; }
+.menu a { display: block; padding: 7px 10px; border-radius: 8px; color: var(--fg); text-decoration: none; }
+.menu a:hover { background: var(--tint); }
+.menu a[aria-current="page"] { background: var(--accent); color: var(--surface); font-weight: 500; }
+.mn ul a { padding: 5px 10px; font-size: 14px; }
+.menu-empty { margin: 6px 10px; font-size: 13px; color: var(--muted); }
+h2.sec { margin: 24px 0 0; padding: 0 0 10px; font-size: 15px; letter-spacing: 0.02em; color: var(--accent); border-bottom: 1px solid var(--line); }
+h2.sec:first-child { margin-top: 14px; }
+.sec + .story { border-top: 0; }
+.mynote.todo { border-style: dashed; background: transparent; }
+.mynote code { font-family: var(--font-mono); font-size: 13px; }
+.amonth { padding-bottom: 18px; }
+.auto { margin: 12px 0 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; color: var(--muted); }
+.auto p { margin: 0 0 6px; }
+.auto .auto-h { font-weight: 700; color: var(--fg); }
+.auto .auto-h span { margin-left: 8px; font-weight: 400; color: var(--muted); }
+.auto ul { margin: 4px 0 8px; padding-left: 1.1em; }
+.auto li { margin: 0 0 3px; }
+.auto li a { color: var(--fg); text-underline-offset: 3px; }
+.auto summary { cursor: pointer; color: var(--accent); }
 .head { padding: 0 4px 20px; }
 .date { margin: 0 0 10px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
 h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
@@ -1036,6 +1080,13 @@ h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .mynote .mynote-h span { margin-left: 8px; font-weight: 400; color: var(--muted); }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .foot { margin: 18px 4px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+@media (max-width: 860px) {
+  .layout { flex-direction: column; gap: 14px; }
+  .side { width: 100%; position: static; max-height: none; overflow: visible; }
+  .wrap { width: 100%; }
+  .menu-bar .long { display: none; }
+  .menu-bar .short, .menu-bar .btn { display: inline; }
+}
 @media (max-width: 720px) {
   .story { grid-template-columns: minmax(0, 1fr); }
 }
@@ -1047,6 +1098,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 </style>
 </head>
 <body>
+<div class="layout">
+<aside class="side">__MENU__</aside>
 <div class="wrap">
   <header class="head">
     <p class="date">__DATE__</p>
@@ -1056,9 +1109,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   </header>
 __FILTER__
   <main class="sheet">
+__TOP__
 __STORIES__
   </main>
   <p class="foot">__FOOT__</p>
+</div>
 </div>
 __SCRIPT__
 </body>
@@ -1126,8 +1181,8 @@ AI_NOTE = ("'AI가 새로 쓴 요약'이라고 표시된 기사의 헤드라인�
            "틀린 내용이 있을 수 있습니다. 중요한 내용은 원문으로 확인하세요.")
 GLOSS_NOTE = ("용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 "
               "정확한 정의는 한국은행 자료를 확인하세요.")
-LEDE = "주요 언론사의 금융경제 기사를 매일 아침 골라 정리합니다. 파란색으로 표시된 말은 기사 옆에서 쉽게 풀어 드립니다."
-JB_LEDE = ("전북은행·JB금융과 전북 지역경제 소식을 기사가 있는 날 한 건씩 골라 정리합니다. "
+LEDE = "주요 언론사의 금융경제 기사를 매일 아침 4건 골라 정리합니다. 파란색으로 표시된 말은 기사 옆에서 쉽게 풀어 드립니다."
+JB_LEDE = ("전북 지역경제 기사를 최대 3건, 전북은행·JB금융 기사를 있는 날에 한 건 골라 정리합니다. "
            "파란색으로 표시된 말은 기사 옆에서 쉽게 풀어 드립니다.")
 SITE_MAIN["lede"] = LEDE
 SITE_JB["lede"] = JB_LEDE
@@ -1148,11 +1203,37 @@ def filter_buttons(tags, counts=None):
     return '  <div class="filter" role="group" aria-label="분야 고르기">' + "".join(buttons) + "</div>"
 
 
-def page_html(records, title, date_label, nav, stories=None, lede=None, site=None, tag_counts=None):
+BRAND = "경제 뉴스 브리핑 및 분석"
+
+
+def rec_section(r):
+    """전북 기록이 어느 파트인지: 'bank'(전북은행·JB금융) 또는 'local'(지역경제). 옛 기록은 꼬리표로 알아봅니다."""
+    return r.get("section") or ("bank" if JB_ORG_TAG in r.get("tags", []) else "local")
+
+
+def jb_sections_html(records):
+    """전북 경제 뉴스: 지역경제 파트를 먼저, 전북은행·JB금융 파트를 그 아래에 보여 줍니다."""
+    local = [r for r in records if rec_section(r) != "bank"]
+    bank = [r for r in records if rec_section(r) == "bank"]
+
+    def block(sec_id, title, rs, empty):
+        body = "\n".join(story_html(r) for r in rs) or f'    <p class="empty">{empty}</p>'
+        return f'    <h2 class="sec" id="{sec_id}">{title}</h2>\n{body}'
+
+    return "\n".join([
+        block("local", "전북 지역경제", local, "오늘은 싣지 않았습니다."),
+        block("bank", "전북은행·JB금융", bank, "오늘은 관련 기사가 없습니다."),
+    ])
+
+
+def page_html(records, title, date_label, nav, stories=None, lede=None, site=None, tag_counts=None,
+              depth=0, active="", top=""):
     """기사 기록 목록으로 한 페이지를 만듭니다.
 
     stories를 주면 기사 대신 그 내용을 넣습니다(목록·월별 페이지용).
     tag_counts(분야→건수)를 주면 목록용 분야 고르기(건수 표시)를 붙입니다.
+    depth는 이 페이지가 저장소 맨 위에서 몇 칸 안쪽에 있는지, active는 왼쪽 메뉴에서 표시할 현재 위치입니다.
+    top은 기사 위에 넣을 글(직접 쓴 분석 등)입니다.
     """
     site = site or SITE_MAIN
     lede = site["lede"] if lede is None else lede
@@ -1165,13 +1246,21 @@ def page_html(records, title, date_label, nav, stories=None, lede=None, site=Non
     elif stories is None and len(present) > 1:
         filt, script = filter_buttons(present), FILTER_SCRIPT
     if stories is None:
-        stories = "\n".join(story_html(r) for r in records)
+        if site["key"] == "jb":
+            stories = jb_sections_html(records)
+            if any(rec_section(r) == "bank" for r in records):
+                nav += '<a href="#bank">전북은행·JB금융 소식 ↓</a>'
+        else:
+            stories = "\n".join(story_html(r) for r in records)
     note = AI_NOTE if (site["always_note"] or any(r.get("ai") for r in records)) else ""
     foot = (note + " " if note else "") + site["foot"]
-    return (TEMPLATE.replace("__TITLE__", escape(title)).replace("__DESC__", escape(site["desc"]))
+    full_title = title if BRAND in title else f"{title} · {BRAND}"
+    return (TEMPLATE.replace("__MENU__", menu_html(depth, active))
+            .replace("__TITLE__", escape(full_title)).replace("__DESC__", escape(site["desc"]))
             .replace("__H1__", escape(site["name"])).replace("__DATE__", escape(date_label))
             .replace("__LEDE__", lede).replace("__NAV__", nav).replace("__FILTER__", filt)
-            .replace("__STORIES__", stories).replace("__FOOT__", foot).replace("__SCRIPT__", script))
+            .replace("__TOP__", top).replace("__STORIES__", stories).replace("__FOOT__", foot)
+            .replace("__SCRIPT__", script + MENU_SCRIPT))
 
 
 # ---------- 날짜별 보관 ----------
@@ -1190,23 +1279,35 @@ def save_archive(day, records, now, site=None):
     (folder / f"{day}.json").write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
+def normalize_jb(r):
+    """전북 기록에 파트(section)와 '지역경제' 꼬리표를 채웁니다(옛 기록도 새 화면에서 같게 보이도록)."""
+    r = dict(r)
+    r["section"] = rec_section(r)
+    tags = list(r.get("tags", []))
+    if r["section"] == "local" and JB_LOCAL_TAG not in tags:
+        tags = [JB_LOCAL_TAG] + tags
+    r["tags"] = tags
+    return r
+
+
 def load_archive(folder=None):
+    folder = folder or ARCHIVE
     days = {}
-    for path in sorted((folder or ARCHIVE).glob("*.json")):
+    for path in sorted(folder.glob("*.json")):
         try:
             obj = json.loads(path.read_text(encoding="utf-8"))
-            days[obj["date"]] = obj["articles"]
+            arts = obj["articles"]
+            if folder == JB_ARCHIVE:
+                arts = [normalize_jb(r) for r in arts]
+            days[obj["date"]] = arts
         except Exception as e:
             print(f"[보관 파일 읽기 실패] {path.name}: {e}")
     return days
 
 
 def cross_nav(site, depth):
-    """다른 사이트로 가는 링크. depth는 현재 페이지가 저장소 맨 위에서 몇 칸 안쪽에 있는지입니다."""
-    up = "../" * depth
-    if site["key"] == "main":
-        return f'<a href="{up}jb/index.html">전북 경제 소식 →</a>'
-    return f'<a href="{up}index.html">← 경제 뉴스 정리</a>'
+    """예전에는 다른 사이트로 가는 링크였지만, 지금은 왼쪽 메뉴가 그 역할을 합니다."""
+    return ""
 
 
 def tag_counts_of(records):
@@ -1244,25 +1345,24 @@ def rebuild_archive(site=None, month_href=None):
     depth = 1 if site["key"] == "main" else 2
     days = load_archive(folder)
     keys = sorted(days)  # 오래된 순
-    home_label = "오늘 뉴스 보기" if site["key"] == "main" else "최근 소식 보기"
+    home_label = "오늘의 뉴스"
     for n, day in enumerate(keys):
         links = [f'<a href="index.html">← 지난 뉴스 목록</a>', f'<a href="../index.html">{home_label}</a>']
         if n > 0:
             links.append(f'<a href="{keys[n - 1]}.html">← 이전 날</a>')
         if n < len(keys) - 1:
             links.append(f'<a href="{keys[n + 1]}.html">다음 날 →</a>')
-        links.append(cross_nav(site, depth))
         html = page_html(days[day], f"{pretty_date(day)} {site['name']}", pretty_date(day) + " 정리",
-                         "".join(links), site=site)
+                         "".join(links), site=site, depth=depth, active=f"{site['key']}-day:{day}")
         (folder / f"{day}.html").write_text(html, encoding="utf-8")
 
     all_records = [r for day in keys for r in days[day]]
     body = list_html(days, list(reversed(keys)), lambda d: f"{d}.html", month_href)
-    nav = f'<a href="../index.html">← {home_label}</a>' + cross_nav(site, depth)
+    nav = f'<a href="../index.html">← {home_label}</a>'
     folder.mkdir(parents=True, exist_ok=True)
     index = page_html([], f"지난 뉴스 목록 · {site['name']}", "지난 뉴스", nav, stories=body,
-                      lede="날짜를 누르면 그날의 기사를 다시 볼 수 있습니다. 위의 분야 버튼으로 원하는 분야만 모아 볼 수 있습니다.",
-                      site=site, tag_counts=tag_counts_of(all_records))
+                      lede="날짜를 누르면 그날의 기사를 다시 볼 수 있습니다. 위의 분야 버튼으로 원하는 분야만 모아 볼 수 있습니다. 왼쪽 메뉴에서 연도·월·일로도 찾아갈 수 있습니다.",
+                      site=site, tag_counts=tag_counts_of(all_records), depth=depth, active=f"{site['key']}-archive")
     (folder / "index.html").write_text(index, encoding="utf-8")
     return len(keys)
 
@@ -1270,7 +1370,11 @@ def rebuild_archive(site=None, month_href=None):
 # ---------- 전북 경제 소식 ----------
 
 def load_notes(path=None):
-    """notes.txt에서 '## 2026-12' 같은 제목 아래의 글을 달별로 읽습니다. 한 개의 #로 시작하는 줄은 설명(메모)이라 무시합니다."""
+    """notes.txt에서 '## 2026-12 경제' 또는 '## 2026-12 지역' 제목 아래의 글을 읽습니다.
+
+    돌려주는 값: {(월, 종류): 글}. 종류를 안 적은 '## 2026-12'는 '지역'으로 봅니다(예전 방식).
+    한 개의 #로 시작하는 줄은 설명(메모)이라 무시합니다.
+    """
     path = path or JB_NOTES
     notes, cur, buf = {}, None, []
 
@@ -1283,10 +1387,10 @@ def load_notes(path=None):
     except Exception:
         return notes
     for line in lines:
-        m = re.match(r"^##\s*(\d{4})[-./]\s*(\d{1,2})\s*$", line.strip())
+        m = re.match(r"^##\s*(\d{4})[-./]\s*(\d{1,2})\s*(경제|지역)?\s*(?:경제)?\s*(?:분석)?\s*$", line.strip())
         if m:
             flush()
-            cur, buf = f"{int(m.group(1)):04d}-{int(m.group(2)):02d}", []
+            cur, buf = (f"{int(m.group(1)):04d}-{int(m.group(2)):02d}", m.group(3) or "지역"), []
         elif line.lstrip().startswith("#") and not line.lstrip().startswith("##"):
             continue
         elif cur:
@@ -1295,21 +1399,29 @@ def load_notes(path=None):
     return notes
 
 
-def note_html(month, text):
+def month_label(m):
+    return f"{m[:4]}년 {int(m[5:])}월"
+
+
+def note_html(month, text, kind="지역"):
     paras = [p.strip() for p in re.split(r"\n\s*\n", text.strip()) if p.strip()]
     body = "".join(f"<p>{escape(p).replace(chr(10), '<br>')}</p>" for p in paras)
-    return (f'    <section class="mynote"><p class="mynote-h">{month[:4]}년 {int(month[5:])}월 이달의 분석'
+    name = "경제 분석" if kind == "경제" else "지역 경제 분석"
+    return (f'    <section class="mynote"><p class="mynote-h">{month_label(month)} {name}'
             f'<span>직접 쓴 글</span></p>{body}</section>')
 
 
-NOTES_TEMPLATE = """# 전북 경제 소식 - 이달의 분석 (직접 쓰는 글)
+NOTES_TEMPLATE = """# 나의 월간 분석 (직접 쓰는 글)
 #
 # 쓰는 방법
-#  1) 맨 아래에 '## 연도-월' 줄을 만들고(예: ## 2026-12), 그 아래 줄부터 그달의 분석을 적습니다.
+#  1) 맨 아래에 '## 연도-월 종류' 줄을 만들고, 그 아래 줄부터 그달의 분석을 적습니다.
+#       경제 분석      → ## 2026-12 경제
+#       지역 경제 분석 → ## 2026-12 지역
 #  2) 문단은 빈 줄로 나눕니다.
 #  3) 맨 앞에 '#' 한 개가 있는 줄은 설명이라 화면에 나오지 않습니다.
-#  4) 쓰지 않은 달은 화면에 아무것도 나오지 않습니다.
+#  4) 쓰지 않은 달은 '아직 쓰지 않았습니다'라고 표시됩니다.
 #  5) 저장(Commit changes)하면 1~2분 뒤 자동으로 페이지에 반영됩니다.
+#  6) 분석 페이지의 '자동 정리'(기사 수, 분야별 건수, 기사 목록)를 보면서 쓰면 편합니다.
 #
 # 쓸 때 참고할 틀
 #  - 이달의 핵심 3건:
@@ -1318,19 +1430,105 @@ NOTES_TEMPLATE = """# 전북 경제 소식 - 이달의 분석 (직접 쓰는 글
 #  - 다음 달에 볼 것:
 #
 # 예시: 아래 두 줄 맨 앞의 '# '(샵과 빈칸)만 지우면 그대로 쓸 수 있습니다.
-# ## 2026-12
+# ## 2026-12 경제
 # 이달의 핵심 3건: ...
 """
 
 
+# ---------- 왼쪽 메뉴 ----------
+
+MENU_CTX = {"main": [], "jb": []}
+ANALYSIS_DIR = HERE / "analysis"
+
+
+def refresh_menu():
+    """메뉴에 넣을 날짜 목록을 보관 폴더에서 다시 읽습니다. 페이지를 만들기 전에 한 번 부릅니다."""
+    MENU_CTX["main"] = sorted(load_archive(ARCHIVE))
+    MENU_CTX["jb"] = sorted(load_archive(JB_ARCHIVE))
+
+
+def menu_html(depth, active):
+    """모든 페이지 왼쪽(휴대폰은 위쪽)에 넣는 펼침식 메뉴. active는 지금 보고 있는 위치입니다."""
+    up = "../" * depth
+
+    def link(href, text, key):
+        cur = ' aria-current="page"' if key == active else ""
+        return f'<a href="{up}{href}"{cur}>{text}</a>'
+
+    def tree(days, base, prefix, month_pages):
+        cur_day = active.split(":", 1)[1] if active.startswith(prefix + "-day:") else ""
+        by_year = {}
+        for d in days:
+            by_year.setdefault(d[:4], {}).setdefault(d[:7], []).append(d)
+        out = []
+        for y in sorted(by_year, reverse=True):
+            months = []
+            for m in sorted(by_year[y], reverse=True):
+                items = []
+                if month_pages:
+                    items.append("<li>" + link(f"jb/month/{m}.html", "이달 정리", f"jb-month:{m}") + "</li>")
+                for d in sorted(by_year[y][m], reverse=True):
+                    dt = datetime.strptime(d, "%Y-%m-%d")
+                    items.append("<li>" + link(f"{base}/{d}.html", f"{dt.day}일 ({WEEKDAYS[dt.weekday()]})",
+                                               f"{prefix}-day:{d}") + "</li>")
+                m_open = " open" if cur_day[:7] == m or active == f"jb-month:{m}" else ""
+                months.append(f'<details class="mn"{m_open}><summary>{int(m[5:])}월 <small>{len(by_year[y][m])}일</small></summary>'
+                              f'<ul>{"".join(items)}</ul></details>')
+            y_open = " open" if cur_day[:4] == y or active.startswith("jb-month:" + y) else ""
+            out.append(f'<details class="yr"{y_open}><summary>{y}년</summary>{"".join(months)}</details>')
+        return "".join(out) or '<p class="menu-empty">아직 기록이 없습니다.</p>'
+
+    def news_group(title, prefix, home, base, days, month_pages):
+        g_open = " open" if active.startswith(prefix) else ""
+        s_open = " open" if active in (f"{prefix}-archive",) or active.startswith(f"{prefix}-day:") or active.startswith("jb-month:") and prefix == "jb" else ""
+        return (f'<details class="grp"{g_open}><summary>{title}</summary><ul>'
+                f'<li>{link(home, "오늘의 뉴스", prefix + "-home")}</li>'
+                f'<li><details class="sub"{s_open}><summary>지난 뉴스 보기</summary>'
+                f'<ul><li>{link(base + "/index.html", "전체 목록", prefix + "-archive")}</li></ul>'
+                f'{tree(days, base, prefix, month_pages)}</details></li></ul></details>')
+
+    a_open = " open" if active.startswith("analysis") else ""
+    return (f'<details class="menu" id="menu" open>'
+            f'<summary class="menu-bar"><span class="long">{BRAND}</span><span class="short">경제 뉴스 브리핑·분석</span>'
+            f'<span class="btn">메뉴</span></summary>'
+            + news_group("주요 경제 뉴스", "main", "index.html", "archive", MENU_CTX["main"], False)
+            + news_group("전북 경제 뉴스", "jb", "jb/index.html", "jb/archive", MENU_CTX["jb"], True)
+            + f'<details class="grp"{a_open}><summary>나의 월간 분석</summary><ul>'
+              f'<li>{link("analysis/economy.html", "경제 분석", "analysis-economy")}</li>'
+              f'<li>{link("analysis/local.html", "지역 경제 분석", "analysis-local")}</li></ul></details>'
+            + '</details>')
+
+
+MENU_SCRIPT = """<script>
+(function () {
+  var menu = document.getElementById("menu");
+  if (!menu) return;
+  var wide = window.matchMedia("(min-width: 861px)");
+  function sync() { menu.open = wide.matches; }
+  sync();
+  menu.querySelector(".menu-bar").addEventListener("click", function (e) { if (wide.matches) e.preventDefault(); });
+  var groups = menu.querySelectorAll(".grp");
+  groups.forEach(function (g) {
+    g.addEventListener("toggle", function () {
+      if (!g.open) return;
+      groups.forEach(function (o) { if (o !== g) o.open = false; });
+    });
+  });
+  if (wide.addEventListener) wide.addEventListener("change", sync);
+})();
+</script>"""
+
+
+# ---------- 전북 경제 뉴스 ----------
+
 def rebuild_jb(data=None):
-    """전북 경제 소식의 보관·월별·첫 화면을 다시 만듭니다."""
+    """전북 경제 뉴스의 보관·월별·첫 화면을 다시 만듭니다."""
     site = SITE_JB
     JB_DIR.mkdir(exist_ok=True)
     JB_MONTH.mkdir(parents=True, exist_ok=True)
     if not JB_NOTES.exists():
         JB_NOTES.write_text(NOTES_TEMPLATE, encoding="utf-8")
-    notes = load_notes()
+    notes = {m: t for (m, k), t in load_notes().items() if k == "지역"}
     days = load_archive(JB_ARCHIVE)
     keys = sorted(days)
     months = sorted({d[:7] for d in keys} | set(notes))
@@ -1343,43 +1541,109 @@ def rebuild_jb(data=None):
         counts = tag_counts_of(recs)
         parts = []
         if m in notes:
-            parts.append(note_html(m, notes[m]))
+            parts.append(note_html(m, notes[m], "지역"))
         if recs:
             summary = " · ".join(f"{t} {counts[t]}" for t in site["all_tags"] if t in counts)
             parts.append(f'    <p class="counts">기사 {len(recs)}건 · 분야별 {escape(summary)}</p>')
         parts.append(list_html(days, list(reversed(mdays)), lambda d: f"../archive/{d}.html", show_month=False))
-        links = ['<a href="../index.html">← 전북 경제 소식</a>', '<a href="../archive/index.html">지난 뉴스 목록</a>']
+        links = ['<a href="../index.html">← 전북 경제 뉴스</a>', '<a href="../archive/index.html">지난 뉴스 목록</a>']
         if n > 0:
             links.append(f'<a href="{months[n - 1]}.html">← 이전 달</a>')
         if n < len(months) - 1:
             links.append(f'<a href="{months[n + 1]}.html">다음 달 →</a>')
-        links.append(cross_nav(site, 2))
-        label = f"{m[:4]}년 {int(m[5:])}월"
+        links.append(f'<a href="../../analysis/local.html#{m}">이달의 지역 경제 분석 →</a>')
+        label = month_label(m)
         html = page_html([], f"{label} 정리 · {site['name']}", f"{label} 월별 정리", "".join(links),
                          stories="\n".join(parts), lede="그달에 모은 기사와 직접 쓴 분석을 한곳에 모았습니다.",
-                         site=site, tag_counts=counts)
+                         site=site, tag_counts=counts, depth=2, active=f"jb-month:{m}")
         (JB_MONTH / f"{m}.html").write_text(html, encoding="utf-8")
 
-    # 첫 화면: 가장 최근 기사 + (이번 달) 이달의 분석
+    # 첫 화면: 가장 최근 날짜의 기사(지역경제 파트 → 전북은행 파트) + (이번 달) 직접 쓴 분석
     this_month = datetime.now(KST).strftime("%Y-%m")
     latest = keys[-1] if keys else None
-    parts = []
-    if this_month in notes:
-        parts.append(note_html(this_month, notes[this_month]))
-    if latest:
-        parts.extend(story_html(r) for r in days[latest])
-        label = "최근 소식 " + pretty_date(latest)
-    else:
-        parts.append('    <p class="empty">아직 소식이 없습니다. 기사가 있는 날 아침 7:30 이후에 채워집니다.</p>')
-        label = "최근 소식"
-    nav = [cross_nav(site, 1), '<a href="archive/index.html">지난 뉴스 보기 →</a>']
+    top = note_html(this_month, notes[this_month], "지역") if this_month in notes else ""
+    nav = ['<a href="archive/index.html">지난 뉴스 보기 →</a>']
     if months:
         nav.append(f'<a href="month/{months[-1]}.html">이번 달 정리 →</a>')
-    recs_latest = days[latest] if latest else []
+    nav.append(f'<a href="../analysis/local.html#{this_month}">지역 경제 분석 →</a>')
+    if latest:
+        recs_latest, stories, label = days[latest], None, "최근 소식 " + pretty_date(latest)
+    else:
+        recs_latest, label = [], "최근 소식"
+        stories = '    <p class="empty">아직 소식이 없습니다. 기사가 있는 날 아침 7:30 이후에 채워집니다.</p>'
     (JB_DIR / "index.html").write_text(
-        page_html(recs_latest, site["name"], label, "".join(nav), stories="\n".join(parts), site=site),
+        page_html(recs_latest, site["name"], label, "".join(nav), stories=stories, site=site,
+                  depth=1, active="jb-home", top=top),
         encoding="utf-8")
     return len(keys)
+
+
+# ---------- 나의 월간 분석 ----------
+
+def analysis_site(name, lede):
+    return {"key": "analysis", "name": name, "all_tags": [], "always_note": False, "lede": lede,
+            "desc": "직접 쓴 월간 경제 분석과, 기사를 모은 자동 정리",
+            "foot": "'직접 쓴 글'은 제가 쓴 분석이고, '자동 정리'는 모아 둔 기사의 건수와 목록만 보여 줍니다. "
+                    "기사의 저작권은 각 언론사에 있으며, 투자 조언이 아닙니다."}
+
+
+def analysis_block(m, kind, days, note, base):
+    """한 달치 분석: 직접 쓴 글(없으면 안내) + 자동 정리(건수·분야·기사 목록)."""
+    mdays = [d for d in sorted(days) if d[:7] == m]
+    recs = [(d, r) for d in mdays for r in days[d]]
+    parts = [f'  <section class="amonth" id="{m}">', f'    <h2 class="month">{month_label(m)}</h2>']
+    if note:
+        parts.append(note_html(m, note, kind))
+    else:
+        parts.append(
+            '    <section class="mynote todo"><p class="mynote-h">직접 쓴 글<span>아직 쓰지 않았습니다</span></p>'
+            f'<p>저장소의 <code>jb/notes.txt</code> 맨 아래에 <code>## {m} {kind}</code> 줄을 만들고, '
+            '그 아래에 이달의 핵심 3건 · 흐름 한 줄 · 내 생각과 근거 · 다음 달에 볼 것을 적으면 이곳에 나타납니다.</p></section>')
+    auto = []
+    if recs:
+        counts = tag_counts_of([r for _, r in recs])
+        ordered = sorted(counts.items(), key=lambda x: (-x[1], x[0]))
+        auto.append(f"<p>기사 {len(recs)}건 · 기사가 있던 날 {len(mdays)}일</p>")
+        if kind == "경제" and ordered:
+            auto.append(f"<p>가장 많이 다룬 분야: {escape(ordered[0][0])} {ordered[0][1]}건</p>")
+        auto.append("<p>분야별: " + " · ".join(f"{escape(t)} {c}건" for t, c in ordered) + "</p>")
+        if kind == "지역":
+            bank = [(d, r) for d, r in recs if rec_section(r) == "bank"]
+            auto.append(f"<p>전북은행·JB금융 기사 {len(bank)}건 · 지역경제 기사 {len(recs) - len(bank)}건</p>")
+            if bank:
+                li = "".join(f'<li>{pretty_date(d)[5:10]} <a href="{base}{d}.html">{escape(r["headline_text"])}</a></li>'
+                             for d, r in bank)
+                auto.append(f"<p>전북은행·JB금융 기사</p><ul>{li}</ul>")
+        li = "".join(f'<li>{pretty_date(d)[5:10]} <a href="{base}{d}.html">{escape(r["headline_text"])}</a> '
+                     + "".join(f'<span class="chip-tag">{escape(t)}</span> ' for t in r.get("tags", [])).rstrip() + "</li>"
+                     for d, r in recs)
+        auto.append(f"<details><summary>이달 기사 전체 보기 ({len(recs)}건)</summary><ul>{li}</ul></details>")
+    else:
+        auto.append("<p>이 달에 모아 둔 기사가 아직 없습니다.</p>")
+    parts.append('    <div class="auto"><p class="auto-h">자동 정리 <span>숫자와 목록만 모았습니다. 분석은 직접 쓴 글에만 담습니다.</span></p>'
+                 + "".join(auto) + "</div>")
+    parts.append("  </section>")
+    return "\n".join(parts)
+
+
+def rebuild_analysis():
+    """나의 월간 분석(경제 분석, 지역 경제 분석) 페이지를 만듭니다."""
+    ANALYSIS_DIR.mkdir(exist_ok=True)
+    notes = load_notes()
+    this_month = datetime.now(KST).strftime("%Y-%m")
+    specs = [
+        ("경제", "economy.html", "경제 분석", load_archive(ARCHIVE), "../archive/", "analysis-economy",
+         "주요 경제 뉴스를 한 달 단위로 돌아보고 직접 쓴 분석을 모았습니다.", '<a href="local.html">지역 경제 분석 →</a>'),
+        ("지역", "local.html", "지역 경제 분석", load_archive(JB_ARCHIVE), "../jb/archive/", "analysis-local",
+         "전북 경제 뉴스를 한 달 단위로 돌아보고 직접 쓴 분석을 모았습니다.", '<a href="economy.html">← 경제 분석</a>'),
+    ]
+    for kind, fname, name, days, base, active, lede, nav in specs:
+        months = sorted({d[:7] for d in days} | {m for (m, k) in notes if k == kind} | {this_month}, reverse=True)
+        body = "\n".join(analysis_block(m, kind, days, notes.get((m, kind)), base) for m in months)
+        html = page_html([], name, "나의 월간 분석", nav, stories=body, lede=lede,
+                         site=analysis_site(name, lede), depth=1, active=active)
+        (ANALYSIS_DIR / fname).write_text(html, encoding="utf-8")
+    return len(specs)
 
 
 def fresh_enough(a, now):
@@ -1405,17 +1669,22 @@ def jb_score(a):
 
 
 def pick_jb(data, index, shared_items, now):
-    """오늘의 전북 경제 소식 한 건을 골라 저장합니다. 마땅한 기사가 없거나 AI 요약이 안 되면 오늘은 건너뜁니다."""
+    """오늘의 전북 경제 뉴스를 고릅니다: 지역경제 최대 3건 + 전북은행·JB금융 최대 1건(있는 날만).
+
+    AI 요약이 안 된 기사는 싣지 않습니다. 오늘 이미 다 채워져 있으면 건너뛰고, 모자라면 모자란 만큼만 더 고릅니다.
+    """
     day = now.strftime("%Y-%m-%d")
-    if (JB_ARCHIVE / f"{day}.json").exists():
-        print(f"[전북] 오늘({day}) 기사는 이미 있어 새로 고르지 않습니다.")
+    old = load_archive(JB_ARCHIVE)
+    have = old.get(day, [])
+    need_bank = JB_BANK_N - sum(1 for r in have if rec_section(r) == "bank")
+    need_local = JB_LOCAL_N - sum(1 for r in have if rec_section(r) != "bank")
+    if need_bank <= 0 and need_local <= 0:
+        print(f"[전북] 오늘({day}) 기사는 이미 채워져 있어 새로 고르지 않습니다.")
         return
     items = [a for a in shared_items]
     for name, urls in JB_FEEDS.items():
-        got = fetch_feed(name, urls)
-        items.extend(got)
-    print(f"[전북] 후보 기사 {len(items)}건 수집")
-    old = load_archive(JB_ARCHIVE)
+        items.extend(fetch_feed(name, urls))
+    print(f"[전북] 후보 기사 {len(items)}건 수집 (더 필요한 수: 지역경제 {max(need_local, 0)}, 전북은행 {max(need_bank, 0)})")
     seen_links = {r["link"] for rs in old.values() for r in rs}
     recent_titles = [r.get("src_title") or r["headline_text"]
                      for d in sorted(old)[-7:] for r in old[d]]
@@ -1432,24 +1701,51 @@ def pick_jb(data, index, shared_items, now):
         pool.append(a)
     oldest = datetime.min.replace(tzinfo=KST)
     pool.sort(key=lambda a: (a["jb_score"], a["ts"] or oldest), reverse=True)
-    pool = drop_same_topic(pool, recent_titles)
-    print(f"[전북] 조건에 맞는 기사 {len(pool)}건")
-    for a in pool[:JB_CANDIDATES]:
+    pool = drop_same_topic(pool, recent_titles)   # 두 파트 사이의 같은 주제도 여기서 한 번에 걸러 냅니다.
+    bank_pool = [a for a in pool if any(w in a["title"] + " " + a["desc"] for w in JB_ORG)]
+    bank_ids = {id(a) for a in bank_pool}
+    local_pool = [a for a in pool if id(a) not in bank_ids]
+    print(f"[전북] 조건에 맞는 기사: 전북은행 {len(bank_pool)}건, 지역경제 {len(local_pool)}건")
+    for a in bank_pool[:JB_CANDIDATES] + local_pool[:JB_CANDIDATES]:
         print(f"  후보 [{a['jb_score']}점] {a['source']} | {a['title'][:50]}")
-    explained = set()
-    for a in pool[:JB_CANDIDATES]:
-        if summarize(a, index, explained, SITE_JB, allow_fallback=False):
-            save_archive(day, [make_record(a, data)], now, SITE_JB)
-            print(f"[전북] 오늘의 기사: {a['source']} | {a['headline']} / 분야 {'/'.join(a['tags'])}")
-            return
-    print("[전북] 오늘은 싣지 않습니다(맞는 기사가 없거나 AI 요약을 만들지 못함).")
+
+    explained, new = set(), []
+
+    def fill(cands, need, section, code_tag, limit):
+        got = 0
+        for a in cands[:limit]:
+            if got >= need:
+                break
+            if not summarize(a, index, explained, SITE_JB, allow_fallback=False):
+                continue
+            rest = [t for t in a["tags"] if t not in (JB_ORG_TAG, JB_LOCAL_TAG)][:1]
+            a["tags"] = [code_tag] + rest
+            rec = make_record(a, data)
+            rec["section"] = section
+            new.append(rec)
+            got += 1
+            print(f"[전북] {'전북은행' if section == 'bank' else '지역경제'}: {a['source']} | {a['headline']} / 분야 {'/'.join(a['tags'])}")
+
+    if need_bank > 0:
+        fill(bank_pool, need_bank, "bank", JB_ORG_TAG, JB_CANDIDATES)
+    if need_local > 0:
+        fill(local_pool, need_local, "local", JB_LOCAL_TAG, JB_CANDIDATES * 2)
+    if not new:
+        print("[전북] 오늘은 새로 싣지 않습니다(맞는 기사가 없거나 AI 요약을 만들지 못함).")
+        return
+    records = sorted(have + new, key=lambda r: rec_section(r) == "bank")   # 지역경제 먼저, 전북은행은 뒤
+    save_archive(day, records, now, SITE_JB)
+    print(f"[전북] 오늘 저장: 지역경제 {sum(1 for r in records if rec_section(r) != 'bank')}건, "
+          f"전북은행 {sum(1 for r in records if rec_section(r) == 'bank')}건")
 
 
 def main():
     rebuild_only = "--rebuild" in sys.argv   # 기사를 새로 모으지 않고 보관된 기록으로 페이지만 다시 만듭니다.
     data, index = load_glossary()
     now = datetime.now(KST)
+    this_month = now.strftime("%Y-%m")
     all_items = []
+    records, date_label = None, ""
     if rebuild_only:
         print("[다시 만들기] 기사를 새로 모으지 않고 보관된 기록으로 페이지만 만듭니다.")
     else:
@@ -1472,28 +1768,49 @@ def main():
             summarize(a, index, explained)
         records = [make_record(a, data) for a in articles]
         date_label = "갱신 " + now.strftime("%Y.%m.%d %a %H:%M").upper()
-        OUT.write_text(page_html(records, SITE_MAIN["name"], date_label,
-                                 '<a href="archive/index.html">지난 뉴스 보기 →</a>' + cross_nav(SITE_MAIN, 0)),
-                       encoding="utf-8")
         save_archive(now.strftime("%Y-%m-%d"), records, now)
-        print(f"{OUT.name} 생성 완료 ({len(articles)}건, 용어집 {len(data)}개)")
+        print(f"주요 경제 뉴스 {len(articles)}건 저장 (용어집 {len(data)}개)")
         for a in articles:
             names = ", ".join(data[i]["name"] for i in a["term_ids"]) or "-"
             how = "AI" if a.get("ai") else ("본문" if a["from_body"] else "RSS")
             tags = "/".join(a["tags"])
             print(f"  [{score(a)}점/{how}/{len(a['points'])}문장/{tags}] {a['source']} | {a['headline']} | 용어: {names}")
-    days = rebuild_archive(SITE_MAIN)
-    print(f"경제 뉴스 정리 보관 {days}일")
-
-    # 전북 경제 소식: 여기서 문제가 생겨도 위의 경제 뉴스 정리는 그대로 유지됩니다.
-    try:
-        if not rebuild_only:
+        # 전북 경제 뉴스: 여기서 문제가 생겨도 위의 주요 경제 뉴스는 그대로 유지됩니다.
+        try:
             pick_jb(data, index, [a for a in all_items if jb_relevant(a)], now)
+        except Exception as e:
+            import traceback
+            print(f"[전북 오류] {e}")
+            traceback.print_exc()
+
+    refresh_menu()   # 오늘 기록까지 저장된 뒤에 메뉴를 만들어야 새 날짜가 메뉴에 들어갑니다.
+    if records is None:   # 다시 만들기: 가장 최근 보관본으로 첫 화면을 만듭니다.
+        main_days = load_archive(ARCHIVE)
+        if main_days:
+            last = max(main_days)
+            records, date_label = main_days[last], "기준 " + pretty_date(last)
+    if records:
+        nav = (f'<a href="archive/index.html">지난 뉴스 보기 →</a>'
+               f'<a href="analysis/economy.html#{this_month}">이달의 분석 →</a>')
+        OUT.write_text(page_html(records, SITE_MAIN["name"], date_label, nav, depth=0, active="main-home"),
+                       encoding="utf-8")
+        print(f"{OUT.name} 생성 완료 ({len(records)}건)")
+    days = rebuild_archive(SITE_MAIN)
+    print(f"주요 경제 뉴스 보관 {days}일")
+
+    try:
         n = rebuild_jb(data)
-        print(f"전북 경제 소식 보관 {n}일")
+        print(f"전북 경제 뉴스 보관 {n}일")
     except Exception as e:
         import traceback
         print(f"[전북 오류] {e}")
+        traceback.print_exc()
+    try:
+        rebuild_analysis()
+        print("나의 월간 분석 페이지 생성 완료")
+    except Exception as e:
+        import traceback
+        print(f"[월간 분석 오류] {e}")
         traceback.print_exc()
 
 
