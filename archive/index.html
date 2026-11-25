@@ -50,7 +50,7 @@ body {
   overflow-wrap: break-word;
 }
 .page { max-width: 1268px; margin: 0 auto; padding: 0 24px; }
-.brand { margin: 0 0 26px; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+.brand { margin: 4px 0 18px 16px; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
 .brand a { color: var(--fg); text-decoration: none; }
 .brand a span { color: var(--accent); }
 .layout { display: flex; gap: 40px; align-items: flex-start; }
@@ -184,26 +184,28 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 </head>
 <body>
 <div class="page">
-  <p class="brand"><a href="../index.html"><span>경제</span> 뉴스 브리핑 및 분석</a></p>
   <div class="layout">
-    <aside class="side"><details class="menu" id="menu" open><summary class="menu-bar"><span>경제 뉴스 브리핑·분석</span><span class="btn">메뉴</span></summary><div class="menu-body"><details class="grp" open><summary>주요 경제 뉴스</summary><ul><li><a href="../index.html">오늘의 뉴스</a></li><li><details class="sub" open><summary>지난 뉴스 보기</summary><div class="tree"><a href="../archive/index.html" aria-current="page">전체 목록</a><details class="yr"><summary>2026년</summary><div class="months"><a href="../archive/month/2026-11.html"><span>11월</span><small>2일</small></a></div></details></div></details></li></ul></details><details class="grp"><summary>전북 경제 뉴스</summary><ul><li><a href="../jb/index.html">오늘의 뉴스</a></li><li><details class="sub"><summary>지난 뉴스 보기</summary><div class="tree"><a href="../jb/archive/index.html">전체 목록</a><details class="yr"><summary>2026년</summary><div class="months"><a href="../jb/month/2026-11.html"><span>11월</span><small>1일</small></a></div></details></div></details></li></ul></details><details class="grp"><summary>나의 월간 분석</summary><ul><li><a href="../analysis/economy.html">경제 분석</a></li><li><a href="../analysis/local.html">지역 경제 분석</a></li></ul></details></div></details></aside>
+    <aside class="side">
+      <p class="brand"><a href="../index.html"><span>경제</span> 뉴스 브리핑 및 분석</a></p>
+<details class="menu" id="menu" open><summary class="menu-bar"><span>경제 뉴스 브리핑·분석</span><span class="btn">메뉴</span></summary><div class="menu-body"><details class="grp" open><summary>주요 경제 뉴스</summary><ul><li><a href="../index.html">오늘의 뉴스</a></li><li><details class="sub" open><summary>지난 뉴스 보기</summary><div class="tree"><a href="../archive/index.html" aria-current="page">전체 목록</a><details class="yr"><summary>2026년</summary><div class="months"><a href="../archive/month/2026-11.html"><span>11월</span><small>2일</small></a></div></details></div></details></li></ul></details><details class="grp"><summary>전북 경제 뉴스</summary><ul><li><a href="../jb/index.html">오늘의 뉴스</a></li><li><details class="sub"><summary>지난 뉴스 보기</summary><div class="tree"><a href="../jb/archive/index.html">전체 목록</a><details class="yr"><summary>2026년</summary><div class="months"><a href="../jb/month/2026-11.html"><span>11월</span><small>1일</small></a></div></details></div></details></li></ul></details><details class="grp"><summary>나의 월간 분석</summary><ul><li><a href="../analysis/economy.html">경제 분석</a></li><li><a href="../analysis/local.html">지역 경제 분석</a></li></ul></details></div></details>
+    </aside>
     <div class="wrap">
       <header class="head">
         <p class="date">지난 뉴스</p>
         <h1>주요 경제 뉴스</h1>
-        <p class="lede">날짜를 누르면 그날의 기사를 다시 볼 수 있습니다.<br>위의 분야 버튼으로 원하는 분야만 모아 볼 수 있습니다.<br>왼쪽 메뉴에서 연도·월·일로도 찾아갈 수 있습니다.</p>
+        <p class="lede">날짜를 누르면 그날의 기사를 다시 볼 수 있습니다.</p>
         <nav class="nav"></nav>
       </header>
-  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="금리" aria-pressed="false">금리 4</button><button type="button" data-tag="증시" aria-pressed="false">증시 4</button><button type="button" data-tag="부동산" aria-pressed="false">부동산 1</button><button type="button" data-tag="기업·산업" aria-pressed="false">기업·산업 3</button><button type="button" data-tag="재정·세금" aria-pressed="false">재정·세금 2</button><button type="button" data-tag="금융" aria-pressed="false">금융 3</button><button type="button" data-tag="경제" aria-pressed="false">경제 1</button></div>
+  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="금리" aria-pressed="false">금리 4</button><button type="button" data-tag="증시" aria-pressed="false">증시 4</button><button type="button" data-tag="기업·산업" aria-pressed="false">기업·산업 3</button><button type="button" data-tag="재정·세금" aria-pressed="false">재정·세금 2</button><button type="button" data-tag="금융" aria-pressed="false">금융 4</button><button type="button" data-tag="경제" aria-pressed="false">경제 1</button></div>
       <main class="sheet">
 
     <h2 class="month">2026년 11월<a href="month/2026-11.html">월별 정리 →</a></h2>
     <section class="day"><h3><a href="2026-11-25.html">2026.11.25 (수)</a></h3>
       <ul>
-        <li data-tags="증시|금융"><a href="2026-11-25.html">코스닥 상장사 임직원 미공개정보 부당이득 수사 통보</a> <span class="chip-tag">증시</span> <span class="chip-tag">금융</span></li>
-        <li data-tags="금융|기업·산업"><a href="2026-11-25.html">한국투자저축은행 해킹…고객 8만6천433명 정보 유출</a> <span class="chip-tag">금융</span> <span class="chip-tag">기업·산업</span></li>
-        <li data-tags="금리|부동산"><a href="2026-11-25.html">은행 가계대출 금리 2년11개월 만에 연 5% 돌파</a> <span class="chip-tag">금리</span> <span class="chip-tag">부동산</span></li>
-        <li data-tags="금리|증시"><a href="2026-11-25.html">금통위 앞둔 국고채 금리 일제 하락, 코스피 6% 급락</a> <span class="chip-tag">금리</span> <span class="chip-tag">증시</span></li>
+        <li data-tags="증시|금융"><a href="2026-11-25.html">미공개정보 부당이득 적발, 임직원 수사통보·기자 과징금</a> <span class="chip-tag">증시</span> <span class="chip-tag">금융</span></li>
+        <li data-tags="금융|기업·산업"><a href="2026-11-25.html">한국투자저축은행 해킹, 고객 8만6천433명 정보 유출</a> <span class="chip-tag">금융</span> <span class="chip-tag">기업·산업</span></li>
+        <li data-tags="금리|금융"><a href="2026-11-25.html">10월 가계대출 금리 2년11개월 만에 연 5% 돌파</a> <span class="chip-tag">금리</span> <span class="chip-tag">금융</span></li>
+        <li data-tags="금리|증시"><a href="2026-11-25.html">국고채 금리 일제 하락, 3년물 5월 이후 최저 수준</a> <span class="chip-tag">금리</span> <span class="chip-tag">증시</span></li>
       </ul></section>
     <section class="day"><h3><a href="2026-11-24.html">2026.11.24 (화)</a></h3>
       <ul>
