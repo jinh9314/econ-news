@@ -5,9 +5,17 @@ on:
     # 매일 한국시간 오전 7:30 (UTC 22:30). GitHub 사정으로 몇 분 늦을 수 있습니다.
     - cron: "30 22 * * *"
   workflow_dispatch:   # Actions 탭에서 수동으로도 실행할 수 있습니다.
+  push:
+    # '이달의 분석'(jb/notes.txt)을 저장하면 기사를 새로 모으지 않고 페이지만 다시 만듭니다.
+    branches: [main]
+    paths: ["jb/notes.txt"]
 
 permissions:
   contents: write
+
+concurrency:
+  group: briefing
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -19,16 +27,17 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Build news page
+      - name: Build pages
         env:
           # 저장소 Settings → Secrets → Actions에 넣어 둔 키입니다. 없으면 AI 없이 문장 발췌 방식으로 만듭니다.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python briefing.py
+        run: python briefing.py ${{ github.event_name == 'push' && '--rebuild' || '' }}
 
-      - name: Commit page
+      - name: Commit pages
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html archive
-          git diff --cached --quiet || git commit -m "Update news"
+          git add index.html archive jb
+          git diff --cached --quiet || git commit -m "Update pages"
+          git pull --rebase
           git push
