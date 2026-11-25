@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>경제뉴스 브리핑</title>
+<title>경제 뉴스 정리</title>
 <meta name="description" content="매일 아침 갱신되는 주요 금융·경제 뉴스와 쉬운 용어 풀이">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
@@ -35,6 +35,7 @@
   }
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   margin: 0;
   background: var(--bg);
@@ -98,6 +99,15 @@ h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .day h3 { margin: 0 0 4px; font-size: 16px; }
 .day h3 a { color: var(--accent); text-underline-offset: 3px; }
 .day ul { margin: 0; padding-left: 1.1em; color: var(--muted); font-size: 14px; line-height: 1.75; }
+.month a { margin-left: 10px; font-size: 12px; color: var(--accent); text-underline-offset: 3px; }
+.day li { margin: 0 0 4px; }
+.day li a { color: var(--fg); text-underline-offset: 3px; }
+.day li a:hover { color: var(--accent); }
+.counts { margin: 0; padding: 16px 0 4px; font-size: 14px; color: var(--muted); }
+.mynote { margin: 20px 0 8px; padding: 14px 18px; border: 1px solid var(--accent); border-radius: 10px; background: var(--tint); }
+.mynote p { margin: 0 0 8px; font-size: 15px; line-height: 1.85; }
+.mynote .mynote-h { font-size: 13px; font-weight: 700; color: var(--accent); }
+.mynote .mynote-h span { margin-left: 8px; font-weight: 400; color: var(--muted); }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .foot { margin: 18px 4px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 @media (max-width: 720px) {
@@ -113,114 +123,121 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 <body>
 <div class="wrap">
   <header class="head">
-    <p class="date">갱신 2026.11.25 WED 11:02</p>
-    <h1>경제뉴스 브리핑</h1>
+    <p class="date">갱신 2026.11.25 WED 16:34</p>
+    <h1>경제 뉴스 정리</h1>
     <p class="lede">주요 언론사의 금융경제 기사를 매일 아침 골라 정리합니다. 파란색으로 표시된 말은 기사 옆에서 쉽게 풀어 드립니다.</p>
-    <nav class="nav"><a href="archive/index.html">지난 브리핑 보기 →</a></nav>
+    <nav class="nav"><a href="archive/index.html">지난 뉴스 보기 →</a><a href="jb/index.html">전북 경제 소식 →</a></nav>
   </header>
-  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="금리" aria-pressed="false">금리</button><button type="button" data-tag="증시" aria-pressed="false">증시</button><button type="button" data-tag="무역" aria-pressed="false">무역</button><button type="button" data-tag="기업·산업" aria-pressed="false">기업·산업</button><button type="button" data-tag="금융" aria-pressed="false">금융</button></div>
+  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="환율" aria-pressed="false">환율</button><button type="button" data-tag="증시" aria-pressed="false">증시</button><button type="button" data-tag="무역" aria-pressed="false">무역</button><button type="button" data-tag="가상자산" aria-pressed="false">가상자산</button><button type="button" data-tag="기업·산업" aria-pressed="false">기업·산업</button><button type="button" data-tag="경제" aria-pressed="false">경제</button></div>
   <main class="sheet">
-    <article class="story" data-tags="금융|기업·산업">
+    <article class="story" data-tags="증시|기업·산업">
       <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">금융</span><span class="chip-tag">기업·산업</span><span class="when">11.25 10:49</span></div>
-        <h2>10월 자동차보험 <span class="t">손해율</span> 연중 최저 수준</h2>
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">증시</span><span class="chip-tag">기업·산업</span><span class="when">11.25 16:23</span></div>
+        <h2>반도체주 급락 속 <span class="t">인버스 ETF</span> 수익률 상위권 장악</h2>
         <ul class="pts">
-          <li>대형 4개사의 10월 자동차보험 손해율은 80.5%로, 작년 같은 달보다 6.9%포인트 낮아졌으며 2021년 집계 이후 동월 기준 가장 낮았다.</li>
-          <li>업계는 강수량 감소로 자연재해가 줄고 유가 상승으로 차량 운행이 줄어 사고 건수가 전체적으로 감소한 것을 원인으로 본다.</li>
-          <li>다만 사고 건당 지급보험금은 늘고 있고 11~12월 계절적 요인으로 손해액이 더 늘어나 손해율이 반등할 수 있다는 것이 업계의 설명이다.</li>
-          <li>올해 1~10월 누적 손해율은 84.3%로 작년 동기보다 1.4%포인트 하락했다.</li>
+          <li>최근 일주일 <span class="t">ETF</span> 수익률 상위 10개 중 7개가 인버스 상품이었고, 하락률 상위 10개는 모두 반도체 관련 <span class="t">레버리지</span> 상품이었다.</li>
+          <li>젠슨 황 엔비디아 CEO의 복귀로 반도체주가 잠시 급등했지만, AI 투자 수익성과 <span class="t">설비투자</span> 지속 가능성에 대한 우려가 이어지며 약세로 돌아섰다.</li>
+          <li>삼성증권 한수진 선임연구원은 반도체 대형주의 코스피 비중이 커 지수에 영향을 주고 있다며 변동성이 계속 이어질 수 있다고 말했다.</li>
+          <li>이날 코스피는 6% 넘게 하락해 4,600대로 밀렸으며, 이는 10개월여 만에 최저 수준이다.</li>
         </ul>
-        <div class="why"><p class="why-h">왜 중요할까요?</p><p>손해율은 보험사가 받은 보험료 중 보험금으로 지급한 비율로, 이 값이 낮을수록 보험사의 수익성이 좋아집니다. 손해율 변화는 결국 자동차보험료 조정 논의와 운전자의 부담에도 영향을 줄 수 있습니다.</p></div>
-        <p class="src">연합뉴스 11.25 10:49 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="https://www.yna.co.kr/view/AKR20261125073300002" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
+        <div class="why"><p class="why-h">왜 중요할까요?</p><p>ETF는 여러 주식을 묶어 사고파는 상품이라 주가 흐름이 투자자 수익률에 바로 반영됩니다. 특정 대형주의 비중이 큰 지수나 레버리지 상품은 그 기업의 등락에 더 크게 흔들리므로, 투자 전에 구조와 위험을 함께 살펴야 합니다.</p></div>
+        <p class="src">연합뉴스 11.25 16:23 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="https://www.yna.co.kr/view/AKR20261125143100008" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
       </div>
       <aside class="terms" aria-label="용어 풀이">
         <p class="terms-h">용어 풀이</p>
         <dl>
-          <dt>손해율</dt>
-          <dd>보험회사가 거둔 보험료 대비 지급한 보험금의 비율입니다. 이 비율이 높으면 보험사가 수익을 내기 어려워집니다.</dd>
+          <dt>인버스 ETF</dt>
+          <dd>지수가 내리면 수익이 나고 오르면 손실이 나도록 반대로 움직이게 설계된 ETF입니다. 하락장에 대비하는 용도로 쓰이기도 합니다.</dd>
+          <dt>상장지수펀드(ETF)</dt>
+          <dd>특정 지수의 움직임을 따라가도록 만든 펀드를 주식처럼 거래소에서 사고팔 수 있게 한 상품입니다.</dd>
+          <dt>레버리지 효과</dt>
+          <dd>빌린 돈을 보태 투자하면 수익도 손실도 자기 돈만 쓸 때보다 크게 부풀려지는 현상을 말합니다.</dd>
+          <dt>설비투자</dt>
+          <dd>기업이 공장, 기계, 장비 같은 생산 시설을 새로 사거나 늘리는 데 쓰는 돈을 말합니다. 경기를 살피는 지표로도 쓰입니다.</dd>
         </dl>
       </aside>
     </article>
-    <article class="story solo" data-tags="기업·산업|증시">
+    <article class="story" data-tags="증시|기업·산업">
       <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">기업·산업</span><span class="chip-tag">증시</span><span class="when">11.25 10:35</span></div>
-        <h2>토스증권, AI 시그널에 종목별 주가 흐름 분석 기능 추가</h2>
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">증시</span><span class="chip-tag">기업·산업</span><span class="when">11.25 16:11</span></div>
+        <h2><span class="t">코스피</span> 6.16% 급락, 10개월여 만의 최저치 마감</h2>
         <ul class="pts">
-          <li>토스증권은 AI 시그널에 최근 한 달간 종목별 주가 흐름을 타임라인으로 보여주는 기능을 추가하고 알림 기능도 강화했다.</li>
-          <li>AI 시그널은 뉴스, 공시, 수급 데이터를 AI로 분석해 보유·관심 종목의 주가 변동 원인을 요약해 알려주는 서비스다.</li>
-          <li>올해 7월부터 10월까지 4개월간 이 서비스의 월평균 이용자는 151만명 이상에 달했다고 토스증권은 전했다.</li>
+          <li>코스피가 25일 전장보다 6.16% 내린 4,697.51로 마감해 지난 1월 13일 이후 10개월여 만의 최저치를 기록했다.</li>
+          <li>인공지능(AI) 투자 심리가 위축된 가운데 간밤 미국 기술주가 약세를 보인 영향으로 보이며, 외국인은 1조8,994억원을 <span class="t">순매도</span>했다.</li>
+          <li>삼성전자는 9.87% 내린 17만700원, SK하이닉스는 11.05% 내린 103만원에 마감했고 코스닥 지수도 2.29% 내린 650.64로 장을 마쳤다.</li>
+          <li>장중 저점은 지난 6월 19일 장중 최고점 대비 50.22% 낮은 수준으로, 미래에셋증권에 따르면 2000년 이후 고점 대비 50% 이상 하락한 경우는 이번을 포함해 네 번뿐이다.</li>
         </ul>
-        <div class="why"><p class="why-h">왜 중요할까요?</p><p>주가가 움직인 이유를 뉴스와 공시로 한눈에 파악하면 투자 판단에 도움이 됩니다. 다만 AI가 요약한 원인은 참고 자료이므로 원문 공시와 함께 확인하는 습관이 중요합니다.</p></div>
-        <p class="src">연합뉴스 11.25 10:35 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="https://www.yna.co.kr/view/AKR20261125070000008" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
-      </div>
-    </article>
-    <article class="story" data-tags="증시|금리">
-      <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">증시</span><span class="chip-tag">금리</span><span class="when">11.25 10:32</span></div>
-        <h2>AI 수익성 우려·관세 부담에 <span class="t">코스피</span> 4%대 급락</h2>
-        <ul class="pts">
-          <li>25일 코스피는 오전 10시 12분 현재 전 거래일 대비 4.79% 하락한 4,700대로 내려앉았다. 전날 회복한 5,000선을 하루 만에 반납한 것이다.</li>
-          <li>간밤 뉴욕 기술주 급락의 영향으로 삼성전자와 SK하이닉스가 7% 넘게 급락했고, AI 투자 수익성 우려와 2028년 이후 메모리 <span class="t">공급 과잉</span> 가능성이 투자 심리를 얼어붙게 했다.</li>
-          <li>미국의 추가 관세 움직임으로 <span class="t">인플레이션</span> 압력이 커지면 <span class="t">연방준비제도</span>의 금리 인상 기조가 장기화할 수 있다는 우려가 나온다.</li>
-          <li>BNP파리바는 마이크론의 투자 의견을 &#x27;중립&#x27;으로 낮추고 목표주가를 1,700달러에서 775달러로 하향 조정했다.</li>
-        </ul>
-        <div class="why"><p class="why-h">왜 중요할까요?</p><p>주요 기술 기업의 주가가 흔들리면 주식에 투자한 개인의 자산 가치도 함께 줄어들 수 있습니다. 금리가 오르면 대출 이자 부담이 커지므로, 연준의 금리 인상 기조는 가계와 기업의 자금 사정에 직접 영향을 줍니다.</p></div>
-        <p class="src">연합뉴스 11.25 10:32 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="https://www.yna.co.kr/view/AKR20261125066900008" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
+        <div class="why"><p class="why-h">왜 중요할까요?</p><p>코스피는 국내 주식시장 전체의 흐름을 보여 주는 대표 지표입니다. 주가가 크게 내리면 주식을 보유한 가계의 자산 가치가 줄고, 기업이 주식 시장에서 자금을 모으기 어려워질 수 있습니다.</p></div>
+        <p class="src">연합뉴스 11.25 16:11 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="https://www.yna.co.kr/view/AKR20261125133251008" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
       </div>
       <aside class="terms" aria-label="용어 풀이">
         <p class="terms-h">용어 풀이</p>
         <dl>
           <dt>주가지수</dt>
           <dd>여러 종목 주가를 하나로 묶어 시장 전체의 흐름을 보여주는 수치입니다. 코스피가 대표적입니다.</dd>
-          <dt>공급과잉</dt>
-          <dd>시장의 수요보다 물건이 많이 만들어진 상태입니다. 팔리지 않는 재고가 쌓이면 보통 가격이 떨어집니다.</dd>
-          <dt>인플레이션</dt>
-          <dd>물가가 지속해서 오르는 현상입니다. 같은 돈으로 살 수 있는 물건이 줄어 돈의 가치가 떨어집니다.</dd>
-          <dt>연방준비제도(Fed)</dt>
-          <dd>미국의 중앙은행 체계입니다. 워싱턴의 이사회와 지역 연방준비은행들로 이뤄져 통화정책을 맡습니다.</dd>
+          <dt>순매수·순매도</dt>
+          <dd>일정 기간 산 금액에서 판 금액을 뺀 값입니다. 산 쪽이 많으면 순매수, 판 쪽이 많으면 순매도라고 하며 투자자별 동향을 볼 때 쓰입니다.</dd>
         </dl>
       </aside>
     </article>
-    <article class="story" data-tags="기업·산업|금융">
+    <article class="story solo" data-tags="무역|경제">
       <div class="main">
-        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">기업·산업</span><span class="chip-tag">금융</span><span class="when">11.25 10:19</span></div>
-        <h2>핀다, AI 중심 <span class="t">저축은행</span> 전환 위해 본점 춘천 이전</h2>
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">무역</span><span class="chip-tag">경제</span><span class="when">11.25 16:10</span></div>
+        <h2>인천경제자유구역 FDI 신고 실적 지난해의 절반 미만</h2>
         <ul class="pts">
-          <li>핀다는 인수한 대원저축은행의 본점을 경북 경주에서 강원 춘천으로 옮기고 인공지능 중심의 은행으로 바꾸겠다고 25일 밝혔다.</li>
-          <li>핀다는 지난달 국내 <span class="t">핀테크</span> 기업 가운데 처음으로 저축은행을 인수한 뒤 이런 변화를 추진하고 있다.</li>
-          <li>내년 초에는 반복 업무를 AI 에이전트가 맡는 저축은행 서비스 &#x27;핀다뱅크&#x27;를 내놓고, 전북은행 등과 제휴해 대구·경북·강원 밖 전국으로 영업을 넓힐 방침이다.</li>
-          <li>첫 그룹 공개채용에서는 핀다뱅크 지원자가 수천 명 몰려 290대 1의 경쟁률을 기록했다.</li>
+          <li>인천경제자유구역의 올해 1∼10월 FDI 누적 신고액은 3억370만달러로, 지난해 같은 기간 6억2천160만달러의 절반에도 못 미쳤다.</li>
+          <li>연간 목표치 6억달러 대비 달성률은 50.6%에 그쳤다.</li>
+          <li>박성진 투자유치사업본부장은 올해 FDI 신고 실적 목표 달성이 어려울 것으로 예상하며, 달성률을 최대한 높이기 위해 노력하고 있다고 밝혔다.</li>
+          <li>다만 실제 국내로 들어온 투자금인 FDI 도착액은 누적 4억4천990만달러로 연간 목표치 3억5천만달러를 웃돌았다.</li>
         </ul>
-        <div class="why"><p class="why-h">왜 중요할까요?</p><p>핀테크 기업이 저축은행을 인수해 AI 중심 은행을 만드는 것은 금융 서비스가 기술 중심으로 바뀌고 있음을 보여 줍니다. 은행 업무가 자동화되면 고객은 대출이나 예금을 더 빠르고 편리하게 이용할 수 있으며, 이는 기존 금융권의 경쟁 구도에도 영향을 줄 수 있습니다.</p></div>
-        <p class="src">연합뉴스 11.25 10:19 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="https://www.yna.co.kr/view/AKR20261125064500002" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
+        <div class="why"><p class="why-h">왜 중요할까요?</p><p>외국인직접투자는 해외 기업이 국내에 공장이나 사업장을 직접 세우거나 기업 지분을 사들이는 투자로, 생산과 고용을 늘리는 역할을 합니다. 신고액은 투자 계획을 기준으로 하고 도착액은 실제 들어온 돈을 기준으로 하기 때문에 두 지표가 다를 수 있다는 점을 알아두면 경제 뉴스를 읽는 데 도움이 됩니다.</p></div>
+        <p class="src">연합뉴스 11.25 16:10 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="https://www.yna.co.kr/view/AKR20261125138900065" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
+      </div>
+    </article>
+    <article class="story" data-tags="환율|증시">
+      <div class="main">
+        <div class="meta"><span class="tag">연합뉴스</span><span class="chip-tag">환율</span><span class="chip-tag">증시</span><span class="when">11.25 15:55</span></div>
+        <h2>미 기술주 조정과 <span class="t">외국인 순매도</span>에 원/달러 <span class="t">환율</span> 상승</h2>
+        <ul class="pts">
+          <li>25일 서울 <span class="t">외환시장</span>에서 원/달러 환율은 전 거래일보다 0.8원 오른 1,343.2원(오후 3시30분 기준가)으로 집계됐다.</li>
+          <li>전날 뉴욕증시에서 AI 투자심리가 위축되며 기술주 조정이 재개되자 외국인이 국내 주식을 순매도했고, 중동 긴장으로 <span class="t">국제유가</span>가 오른 것이 환율을 밀어 올렸다.</li>
+          <li>다만 반도체 수출업체의 월말 네고(달러 매도) 물량이 꾸준히 들어오고 1,350원 부근에서 고점 매도 물량이 나와 추가 상승은 제한되는 모습이다.</li>
+          <li>코스피는 6.16% 내린 4,697.51에 장을 마쳤고, 외국인은 1조9천527억원어치를 순매도했다.</li>
+        </ul>
+        <div class="why"><p class="why-h">왜 중요할까요?</p><p>환율은 원화와 달러의 교환 비율이므로 환율이 오르면 해외 직구나 수입 물품의 원화 가격 부담이 커집니다. 외국인 투자자의 주식 매도와 국제유가 상승이 겹치면 환율이 흔들릴 수 있어, 일반 가계의 물가와 생활비에도 간접적으로 영향을 주게 됩니다.</p></div>
+        <p class="src">연합뉴스 11.25 15:55 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="https://www.yna.co.kr/view/AKR20261125137900002" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
       </div>
       <aside class="terms" aria-label="용어 풀이">
         <p class="terms-h">용어 풀이</p>
         <dl>
-          <dt>저축은행</dt>
-          <dd>일반 은행보다 규모가 작고 주로 서민과 중소기업을 상대로 예금과 대출을 하는 금융회사입니다. 예금 금리는 대체로 높은 편입니다.</dd>
-          <dt>핀테크</dt>
-          <dd>금융과 기술의 합성어로, 모바일 송금과 간편결제처럼 정보기술을 활용해 만든 새로운 금융 서비스를 뜻합니다.</dd>
+          <dt>외국인 순매도</dt>
+          <dd>외국인 투자자가 주식을 산 금액보다 판 금액이 더 많은 상태를 말합니다. 외국인 자금이 빠져나가는 흐름으로 해석되기도 합니다.</dd>
+          <dt>환율</dt>
+          <dd>서로 다른 나라 돈을 바꿀 때의 교환 비율입니다. 예를 들어 1달러를 사는 데 필요한 원화 금액이 환율입니다.</dd>
+          <dt>외환시장</dt>
+          <dd>원화와 달러처럼 서로 다른 나라 돈을 사고파는 시장입니다. 여기서 수요와 공급에 따라 환율이 정해집니다.</dd>
+          <dt>국제원유가격</dt>
+          <dd>세계 시장에서 거래되는 원유의 가격입니다. 두바이유, 브렌트유, WTI가 대표적이며 물가에 큰 영향을 줍니다.</dd>
         </dl>
       </aside>
     </article>
-    <article class="story" data-tags="무역|기업·산업">
+    <article class="story" data-tags="가상자산|증시">
       <div class="main">
-        <div class="meta"><span class="tag">한국경제</span><span class="chip-tag">무역</span><span class="chip-tag">기업·산업</span><span class="when">11.25 08:58</span></div>
-        <h2>서아프리카 금 정련 시설 경쟁 확충, 설비 과잉 우려</h2>
+        <div class="meta"><span class="tag">한국경제</span><span class="chip-tag">가상자산</span><span class="chip-tag">증시</span><span class="when">11.25 15:31</span></div>
+        <h2><span class="t">비트코인</span> 8000만 원대로 하락…투자심리 위축</h2>
         <ul class="pts">
-          <li>서아프리카 국가들은 두바이 등 해외 거래 중심지에 대한 의존을 줄이기 위해 자국 내 금 정련 시설을 경쟁적으로 늘리고 있다. 가나, 기니, 말리, 부르키나파소는 2024년부터 대규모 정련 시설을 잇달아 가동하거나 건설 계획을 발표했다.</li>
-          <li>이는 <span class="t">금값</span> 상승에 따른 광업 수익을 자국에 더 많이 확보하려는 목적에서 비롯됐다. 정련 능력이 역내 금 생산량의 두 배에 육박하면서 각국의 정련 설비 투자가 과잉이 될 수 있다는 지적이 나온다.</li>
-          <li>이에 따라 투자 수익성이 악화되고 현지에서 정련한 금의 판매 가격이 떨어질 수 있다는 우려가 커지고 있다.</li>
+          <li>25일 업비트에 따르면 비트코인은 오후 1시 기준 8054만6000원에 거래되며 24시간 전보다 1.92% 하락했다.</li>
+          <li>미국 기술주 약세와 현물 상장지수펀드(ETF) 자금 이탈 등으로 투자심리가 위축된 것이 이번 하락의 배경이다.</li>
+          <li>지난 1년간 투자자의 실현손실이 FTX 거래소 붕괴 이후 최고 수준을 기록해 하락 압력이 더 커질 수 있다는 전망이 나온다.</li>
         </ul>
-        <div class="why"><p class="why-h">왜 중요할까요?</p><p>생산 규모보다 설비가 지나치게 많으면 가동률이 떨어지고 투자금을 회수하기 어려워져 기업 손실로 이어질 수 있습니다. 원자재를 생산하는 나라가 가공 단계까지 맡아 수익을 자국에 남기려는 시도가 국제 무역에서 어떤 결과를 낳는지 보여 주는 사례입니다.</p></div>
-        <p class="src">한국경제 11.25 08:58 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="https://www.hankyung.com/article/202611258479i" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
+        <div class="why"><p class="why-h">왜 중요할까요?</p><p>비트코인처럼 가격 변동이 큰 자산은 투자심리에 따라 가격이 크게 흔들릴 수 있습니다. 가격이 떨어지면 보유 투자자의 손실이 커지고, 이는 시장 전체의 매수 의욕을 낮추는 요인이 되어 가상자산 투자를 고려하는 사람들에게도 중요한 신호입니다.</p></div>
+        <p class="src">한국경제 11.25 15:31 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="https://www.hankyung.com/article/202611259318i" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
       </div>
       <aside class="terms" aria-label="용어 풀이">
         <p class="terms-h">용어 풀이</p>
         <dl>
-          <dt>금값</dt>
-          <dd>금의 시세를 말합니다. 금은 불안할 때 찾는 안전자산으로 알려져 있어 물가, 금리, 달러 흐름과 함께 자주 언급됩니다.</dd>
+          <dt>가상통화</dt>
+          <dd>실물 없이 전자적으로만 존재하며 인터넷에서 거래되는 화폐 성격의 자산입니다. 비트코인이 대표적입니다.</dd>
         </dl>
       </aside>
     </article>
