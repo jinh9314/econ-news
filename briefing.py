@@ -983,7 +983,7 @@ body {
   overflow-wrap: break-word;
 }
 .page { max-width: 1268px; margin: 0 auto; padding: 0 24px; }
-.brand { margin: 0 0 26px; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+.brand { margin: 4px 0 18px 16px; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
 .brand a { color: var(--fg); text-decoration: none; }
 .brand a span { color: var(--accent); }
 .layout { display: flex; gap: 40px; align-items: flex-start; }
@@ -1117,9 +1117,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 </head>
 <body>
 <div class="page">
-  <p class="brand"><a href="__HOME__"><span>경제</span> 뉴스 브리핑 및 분석</a></p>
   <div class="layout">
-    <aside class="side">__MENU__</aside>
+    <aside class="side">
+      <p class="brand"><a href="__HOME__"><span>경제</span> 뉴스 브리핑 및 분석</a></p>
+__MENU__
+    </aside>
     <div class="wrap">
       <header class="head">
         <p class="date">__DATE__</p>
@@ -1382,7 +1384,7 @@ def rebuild_archive(site=None, month_href=None):
     nav = ""
     folder.mkdir(parents=True, exist_ok=True)
     index = page_html([], f"지난 뉴스 목록 · {site['name']}", "지난 뉴스", nav, stories=body,
-                      lede="날짜를 누르면 그날의 기사를 다시 볼 수 있습니다. 위의 분야 버튼으로 원하는 분야만 모아 볼 수 있습니다. 왼쪽 메뉴에서 연도·월·일로도 찾아갈 수 있습니다.",
+                      lede="날짜를 누르면 그날의 기사를 다시 볼 수 있습니다.",
                       site=site, tag_counts=tag_counts_of(all_records), depth=depth, active=f"{site['key']}-archive")
     (folder / "index.html").write_text(index, encoding="utf-8")
     return len(keys)
