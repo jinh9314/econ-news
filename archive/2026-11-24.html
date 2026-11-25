@@ -47,29 +47,38 @@ body {
   word-break: keep-all;
   overflow-wrap: break-word;
 }
-.layout { display: flex; gap: 28px; align-items: flex-start; max-width: 1268px; margin: 0 auto; }
-.side { width: 260px; flex-shrink: 0; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
-.wrap { flex: 1; min-width: 0; max-width: 980px; margin: 0; }
-.menu { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px 12px; font-size: 14.5px; }
+.page { max-width: 1268px; margin: 0 auto; }
+.brand { margin: 0 4px 14px; font-size: 15px; font-weight: 700; letter-spacing: 0.02em; }
+.brand a { color: var(--accent); text-decoration: none; }
+.layout { display: flex; gap: 24px; align-items: flex-start; }
+.side { width: 290px; flex-shrink: 0; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+.wrap { flex: 1; min-width: 0; margin: 0; }
+.menu { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; font-size: 15px; }
 .menu summary { list-style: none; cursor: pointer; }
 .menu summary::-webkit-details-marker { display: none; }
-.menu-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 8px 12px; font-weight: 700; color: var(--accent); font-size: 16px; }
-.menu-bar .short, .menu-bar .btn { display: none; }
-.menu-bar .btn { font-size: 13px; font-weight: 500; border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; }
+.menu-bar { display: none; justify-content: space-between; align-items: center; min-height: 44px; font-weight: 700; color: var(--accent); font-size: 16px; }
+.menu-bar .btn { font-size: 13px; font-weight: 500; border: 1px solid var(--accent); border-radius: 999px; padding: 4px 14px; }
+.menu-body { display: flex; flex-direction: column; gap: 10px; }
 .menu ul { list-style: none; margin: 0; padding: 0; }
-.menu details > ul, .menu details > details { margin-left: 8px; }
-.grp > summary, .sub > summary, .yr > summary, .mn > summary { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-radius: 8px; }
-.grp > summary { font-weight: 700; margin-top: 4px; }
-.grp > summary::after, .sub > summary::after, .yr > summary::after, .mn > summary::after { content: "▸"; color: var(--muted); font-size: 12px; }
-.grp[open] > summary::after, .sub[open] > summary::after, .yr[open] > summary::after, .mn[open] > summary::after { content: "▾"; }
-.grp[open] > summary { background: var(--tint); }
-.sub > summary { font-weight: 500; }
-.yr > summary, .mn > summary { font-size: 14px; }
-.mn small { margin-left: 6px; color: var(--muted); font-weight: 400; }
-.menu a { display: block; padding: 7px 10px; border-radius: 8px; color: var(--fg); text-decoration: none; }
+.grp { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--tint); }
+.grp[open] { background: var(--surface); }
+.grp > summary { display: flex; justify-content: space-between; align-items: center; min-height: 52px; padding: 0 16px; font-size: 17px; font-weight: 700; }
+.grp[open] > summary { background: var(--accent); color: var(--surface); }
+.grp > summary::after, .sub > summary::after, .yr > summary::after { content: "▸"; font-size: 13px; color: var(--muted); }
+.grp[open] > summary::after { content: "▾"; color: var(--surface); }
+.sub[open] > summary::after, .yr[open] > summary::after { content: "▾"; }
+.grp > ul { margin: 8px 8px 10px 20px; padding-left: 10px; border-left: 2px solid var(--line); }
+.sub > summary { display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; font-size: 15px; font-weight: 500; }
+.sub > summary:hover, .yr > summary:hover { background: var(--tint); }
+.tree { margin: 2px 0 6px 10px; padding-left: 10px; border-left: 2px solid var(--line); font-size: 14px; }
+.yr > summary { display: flex; justify-content: space-between; align-items: center; min-height: 40px; padding: 0 10px; border-radius: 8px; font-weight: 500; }
+.months { margin: 0 0 4px 8px; padding-left: 10px; border-left: 2px solid var(--line); }
+.menu a { display: flex; align-items: center; justify-content: space-between; min-height: 40px; padding: 0 12px; border-radius: 8px; color: var(--fg); text-decoration: none; font-size: 15px; }
+.tree a { min-height: 38px; font-size: 14px; }
 .menu a:hover { background: var(--tint); }
-.menu a[aria-current="page"] { background: var(--accent); color: var(--surface); font-weight: 500; }
-.mn ul a { padding: 5px 10px; font-size: 14px; }
+.menu a.here { font-weight: 700; color: var(--accent); }
+.menu a[aria-current="page"] { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent); font-weight: 700; }
+.menu small { font-size: 12px; font-weight: 400; color: var(--muted); }
 .menu-empty { margin: 6px 10px; font-size: 13px; color: var(--muted); }
 h2.sec { margin: 24px 0 0; padding: 0 0 10px; font-size: 15px; letter-spacing: 0.02em; color: var(--accent); border-bottom: 1px solid var(--line); }
 h2.sec:first-child { margin-top: 14px; }
@@ -85,7 +94,7 @@ h2.sec:first-child { margin-top: 14px; }
 .auto li { margin: 0 0 3px; }
 .auto li a { color: var(--fg); text-underline-offset: 3px; }
 .auto summary { cursor: pointer; color: var(--accent); }
-.head { padding: 0 4px 20px; }
+.head { padding: 0 4px 16px; }
 .date { margin: 0 0 10px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
 h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
 .lede { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.7; max-width: 38em; }
@@ -148,11 +157,12 @@ h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .foot { margin: 18px 4px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 @media (max-width: 860px) {
-  .layout { flex-direction: column; gap: 14px; }
-  .side { width: 100%; position: static; max-height: none; overflow: visible; }
-  .wrap { width: 100%; }
-  .menu-bar .long { display: none; }
-  .menu-bar .short, .menu-bar .btn { display: inline; }
+  .page { display: flex; flex-direction: column; }
+  .layout { display: contents; }
+  .brand { display: none; }
+  .side { order: -1; width: 100%; position: static; max-height: none; overflow: visible; margin-bottom: 14px; }
+  .menu-bar { display: flex; }
+  .menu[open] > .menu-bar { margin-bottom: 8px; }
 }
 @media (max-width: 720px) {
   .story { grid-template-columns: minmax(0, 1fr); }
@@ -165,9 +175,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 </style>
 </head>
 <body>
-<div class="layout">
-<aside class="side"><details class="menu" id="menu" open><summary class="menu-bar"><span class="long">경제 뉴스 브리핑 및 분석</span><span class="short">경제 뉴스 브리핑·분석</span><span class="btn">메뉴</span></summary><details class="grp" open><summary>주요 경제 뉴스</summary><ul><li><a href="../index.html">오늘의 뉴스</a></li><li><details class="sub" open><summary>지난 뉴스 보기</summary><ul><li><a href="../archive/index.html">전체 목록</a></li></ul><details class="yr" open><summary>2026년</summary><details class="mn" open><summary>11월 <small>2일</small></summary><ul><li><a href="../archive/2026-11-25.html">25일 (수)</a></li><li><a href="../archive/2026-11-24.html" aria-current="page">24일 (화)</a></li></ul></details></details></details></li></ul></details><details class="grp"><summary>전북 경제 뉴스</summary><ul><li><a href="../jb/index.html">오늘의 뉴스</a></li><li><details class="sub"><summary>지난 뉴스 보기</summary><ul><li><a href="../jb/archive/index.html">전체 목록</a></li></ul><details class="yr"><summary>2026년</summary><details class="mn"><summary>11월 <small>1일</small></summary><ul><li><a href="../jb/month/2026-11.html">이달 정리</a></li><li><a href="../jb/archive/2026-11-25.html">25일 (수)</a></li></ul></details></details></details></li></ul></details><details class="grp"><summary>나의 월간 분석</summary><ul><li><a href="../analysis/economy.html">경제 분석</a></li><li><a href="../analysis/local.html">지역 경제 분석</a></li></ul></details></details></aside>
-<div class="wrap">
+<div class="page">
+  <p class="brand"><a href="../index.html">경제 뉴스 브리핑 및 분석</a></p>
   <header class="head">
     <p class="date">2026.11.24 (화) 정리</p>
     <h1>주요 경제 뉴스</h1>
@@ -175,7 +184,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
     <nav class="nav"><a href="index.html">← 지난 뉴스 목록</a><a href="../index.html">오늘의 뉴스</a><a href="2026-11-25.html">다음 날 →</a></nav>
   </header>
   <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="금리" aria-pressed="false">금리</button><button type="button" data-tag="증시" aria-pressed="false">증시</button><button type="button" data-tag="기업·산업" aria-pressed="false">기업·산업</button><button type="button" data-tag="재정·세금" aria-pressed="false">재정·세금</button><button type="button" data-tag="금융" aria-pressed="false">금융</button><button type="button" data-tag="경제" aria-pressed="false">경제</button></div>
-  <main class="sheet">
+  <div class="layout">
+    <aside class="side"><details class="menu" id="menu" open><summary class="menu-bar"><span>경제 뉴스 브리핑·분석</span><span class="btn">메뉴</span></summary><div class="menu-body"><details class="grp" open><summary>주요 경제 뉴스</summary><ul><li><a href="../index.html">오늘의 뉴스</a></li><li><details class="sub" open><summary>지난 뉴스 보기</summary><div class="tree"><a href="../archive/index.html">전체 목록</a><details class="yr" open><summary>2026년</summary><div class="months"><a href="../archive/month/2026-11.html" class="here"><span>11월</span><small>2일</small></a></div></details></div></details></li></ul></details><details class="grp"><summary>전북 경제 뉴스</summary><ul><li><a href="../jb/index.html">오늘의 뉴스</a></li><li><details class="sub"><summary>지난 뉴스 보기</summary><div class="tree"><a href="../jb/archive/index.html">전체 목록</a><details class="yr"><summary>2026년</summary><div class="months"><a href="../jb/month/2026-11.html"><span>11월</span><small>1일</small></a></div></details></div></details></li></ul></details><details class="grp"><summary>나의 월간 분석</summary><ul><li><a href="../analysis/economy.html">경제 분석</a></li><li><a href="../analysis/local.html">지역 경제 분석</a></li></ul></details></div></details></aside>
+    <div class="wrap">
+      <main class="sheet">
 
     <article class="story" data-tags="기업·산업|재정·세금">
       <div class="main">
@@ -289,9 +301,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
         </dl>
       </aside>
     </article>
-  </main>
-  <p class="foot">'AI가 새로 쓴 요약'이라고 표시된 기사의 헤드라인과 요약, 해설은 AI가 언론사 기사를 참고해 사실만 새로 쓴 것이라 틀린 내용이 있을 수 있습니다. 중요한 내용은 원문으로 확인하세요. 기사 문장의 저작권은 각 언론사에 있습니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요. 투자 조언이 아닙니다.</p>
-</div>
+      </main>
+      <p class="foot">'AI가 새로 쓴 요약'이라고 표시된 기사의 헤드라인과 요약, 해설은 AI가 언론사 기사를 참고해 사실만 새로 쓴 것이라 틀린 내용이 있을 수 있습니다. 중요한 내용은 원문으로 확인하세요. 기사 문장의 저작권은 각 언론사에 있습니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요. 투자 조언이 아닙니다.</p>
+    </div>
+  </div>
 </div>
 <script>
 (function () {
@@ -320,6 +333,12 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   function sync() { menu.open = wide.matches; }
   sync();
   menu.querySelector(".menu-bar").addEventListener("click", function (e) { if (wide.matches) e.preventDefault(); });
+  // 지금 보는 위치가 속한 칸은 접속하자마자 펼칩니다.
+  var cur = menu.querySelector('a[aria-current="page"], a.here');
+  if (cur) {
+    var d = cur.parentElement;
+    while (d && d !== menu) { if (d.tagName === "DETAILS") d.open = true; d = d.parentElement; }
+  }
   var groups = menu.querySelectorAll(".grp");
   groups.forEach(function (g) {
     g.addEventListener("toggle", function () {
