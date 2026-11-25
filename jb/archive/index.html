@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>지난 뉴스 목록 · 전북 경제 소식</title>
+<meta name="description" content="전북은행·JB금융과 전북 지역경제 소식을 하루 한 건씩 정리합니다">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f1f4f7;
+  --surface: #ffffff;
+  --tint: #eef3f6;
+  --fg: #15202b;
+  --muted: #566473;
+  --line: #d9e0e7;
+  --accent: #0d6b73;
+  --blue: #1a5fd0;
+  --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #000000;
+    --surface: #121212;
+    --tint: #1c1c1c;
+    --fg: #f2f2f2;
+    --muted: #a6a6a6;
+    --line: #333333;
+    --accent: #ffffff;
+    --blue: #ffffff;
+    --mark: #4a4a4a;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  padding: 28px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px));
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.wrap { max-width: 980px; margin: 0 auto; }
+.head { padding: 0 4px 20px; }
+.date { margin: 0 0 10px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
+h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.7; max-width: 38em; }
+.nav { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 14px 0 0; font-size: 14px; }
+.nav a, .src a { color: var(--accent); text-underline-offset: 3px; }
+.filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 4px 14px; }
+.filter button {
+  font: 500 13px/1 var(--font-body); color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer;
+}
+.filter button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px 24px; }
+.story {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 16px 32px;
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+.story:first-child { border-top: 0; }
+.story[hidden] { display: none; }
+.story.solo { grid-template-columns: minmax(0, 1fr); }
+.main, .terms { min-width: 0; }
+.meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.tag { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); }
+.chip-tag { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+.when { margin-left: auto; font: 400 12px/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
+h2 { margin: 10px 0 10px; font-size: 19px; line-height: 1.45; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+h2 a { color: inherit; text-decoration: none; }
+h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.pts { margin: 0; padding-left: 1.1em; max-width: 40em; }
+.pts li { margin: 0 0 8px; font-size: 15px; line-height: 1.8; }
+.pts li::marker { color: var(--muted); }
+.t { color: var(--blue); font-weight: 700; }
+.why { margin: 12px 0 0; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--tint); border-radius: 0 8px 8px 0; max-width: 40em; }
+.why p { margin: 0; font-size: 14.5px; line-height: 1.75; }
+.why .why-h { margin-bottom: 2px; font-size: 12.5px; font-weight: 700; color: var(--accent); }
+.src { margin: 12px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+.terms { align-self: start; background: var(--tint); border-radius: 8px; padding: 14px 16px 6px; }
+.terms-h { margin: 0 0 10px; font: 500 12px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
+.terms dl { margin: 0; }
+.terms dt { font-size: 14px; font-weight: 700; color: var(--blue); }
+.terms dd { margin: 2px 0 12px; font-size: 14px; line-height: 1.7; }
+.empty { margin: 0; padding: 24px 0; color: var(--muted); font-size: 14px; }
+.month { margin: 0; padding: 22px 0 6px; font: 500 13px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); border-top: 1px solid var(--line); }
+.month:first-child { border-top: 0; }
+.day { padding: 10px 0 14px; }
+.day h3 { margin: 0 0 4px; font-size: 16px; }
+.day h3 a { color: var(--accent); text-underline-offset: 3px; }
+.day ul { margin: 0; padding-left: 1.1em; color: var(--muted); font-size: 14px; line-height: 1.75; }
+.month a { margin-left: 10px; font-size: 12px; color: var(--accent); text-underline-offset: 3px; }
+.day li { margin: 0 0 4px; }
+.day li a { color: var(--fg); text-underline-offset: 3px; }
+.day li a:hover { color: var(--accent); }
+.counts { margin: 0; padding: 16px 0 4px; font-size: 14px; color: var(--muted); }
+.mynote { margin: 20px 0 8px; padding: 14px 18px; border: 1px solid var(--accent); border-radius: 10px; background: var(--tint); }
+.mynote p { margin: 0 0 8px; font-size: 15px; line-height: 1.85; }
+.mynote .mynote-h { font-size: 13px; font-weight: 700; color: var(--accent); }
+.mynote .mynote-h span { margin-left: 8px; font-weight: 400; color: var(--muted); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.foot { margin: 18px 4px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+@media (max-width: 720px) {
+  .story { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  h1 { font-size: 26px; }
+  h2 { font-size: 17px; }
+  .sheet { padding: 2px 16px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="head">
+    <p class="date">지난 뉴스</p>
+    <h1>전북 경제 소식</h1>
+    <p class="lede">날짜를 누르면 그날의 기사를 다시 볼 수 있습니다. 위의 분야 버튼으로 원하는 분야만 모아 볼 수 있습니다.</p>
+    <nav class="nav"><a href="../index.html">← 최근 소식 보기</a><a href="../../index.html">← 경제 뉴스 정리</a></nav>
+  </header>
+  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="전북은행 관련" aria-pressed="false">전북은행 관련 1</button><button type="button" data-tag="금융" aria-pressed="false">금융 1</button></div>
+  <main class="sheet">
+    <h2 class="month">2026년 11월<a href="../month/2026-11.html">월별 정리 →</a></h2>
+    <section class="day"><h3><a href="2026-11-25.html">2026.11.25 (수)</a></h3>
+      <ul>
+        <li data-tags="전북은행 관련|금융"><a href="2026-11-25.html">전북은행, 다문화가정·이주민 지원 협약 체결</a> <span class="chip-tag">전북은행 관련</span> <span class="chip-tag">금융</span></li>
+      </ul></section>
+    <p class="empty empty-filter" hidden>이 분야의 기사가 없습니다.</p>
+  </main>
+  <p class="foot">'AI가 새로 쓴 요약'이라고 표시된 기사의 헤드라인과 요약, 해설은 AI가 언론사 기사를 참고해 사실만 새로 쓴 것이라 틀린 내용이 있을 수 있습니다. 중요한 내용은 원문으로 확인하세요. 기사의 저작권은 각 언론사에 있습니다. 이 페이지는 전북은행·JB금융그룹 등 특정 기관과 관계없는 개인 학습용 페이지이며, 금융상품을 권유하는 내용이 아닙니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요.</p>
+</div>
+<script>
+(function () {
+  var bar = document.querySelector(".filter");
+  if (!bar) return;
+  function apply(tag) {
+    document.querySelectorAll(".day li").forEach(function (li) {
+      var tags = (li.getAttribute("data-tags") || "").split("|");
+      li.hidden = tag !== "" && tags.indexOf(tag) < 0;
+    });
+    var nodes = document.querySelectorAll(".sheet > .month, .sheet > .day");
+    var visibleAfter = false;
+    for (var i = nodes.length - 1; i >= 0; i--) {
+      var n = nodes[i];
+      if (n.classList.contains("day")) {
+        var any = n.querySelector("li:not([hidden])") !== null;
+        n.hidden = !any;
+        if (any) visibleAfter = true;
+      } else {
+        n.hidden = !visibleAfter;
+        visibleAfter = false;
+      }
+    }
+    var empty = document.querySelector(".empty-filter");
+    if (empty) empty.hidden = !!document.querySelector(".day:not([hidden])");
+    bar.querySelectorAll("button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-tag") === tag));
+    });
+  }
+  bar.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (b) apply(b.getAttribute("data-tag"));
+  });
+})();
+</script>
+</body>
+</html>
