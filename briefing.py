@@ -1507,7 +1507,7 @@ ECOS_KEY = os.environ.get("ECOS_API_KEY", "").strip()   # 한국은행 ECOS 키(
 # ECOS 키가 없을 때 직접 적어 두는 한국 기준금리. 예: (2.50, "2026-10-23")  → 값, 그 값이 된 날짜. 쓰지 않으면 None.
 KR_BASE_RATE_MANUAL = None
 
-# 야후 파이낸스 기호 (키 필요 없음)
+# (참고) 야후 기호
 MARKET_YAHOO = {"usdkrw": "KRW=X", "gold": "GC=F", "wti": "CL=F",
                 "kospi": "^KS11", "spx": "^GSPC", "ust10": "^TNX"}
 # 표시 정의: (키, 이름, 값 서식, 변화 방식, 소수 자릿수, 값 단위)
@@ -1522,15 +1522,24 @@ MARKET_LAYOUT = [
 ]
 
 
-def mk_get(url, encoding="utf-8", timeout=20):
+def mk_get(url, encoding="utf-8", timeout=30):
+    """주소를 읽어 글로 돌려줍니다. 429(너무 많은 요청)는 잠깐 쉬었다가 한 번 더 시도합니다."""
+    import time
     last = None
-    for _ in range(2):
+    for n in range(3):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
                                                                        "(KHTML, like Gecko) Chrome/120 Safari/537.36",
-                                                       "Accept": "*/*"})
+                                                       "Accept": "*/*", "Accept-Language": "en-US,en;q=0.9"})
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return resp.read().decode(encoding, errors="replace")
+        except urllib.error.HTTPError as e:
+            last = e
+            if e.code == 429 and n < 2:
+                time.sleep(3 * (n + 1))
+                continue
+            if e.code in (404, 410):
+                break
         except Exception as e:   # noqa
             last = e
     raise last
@@ -1561,34 +1570,49 @@ def mk_yahoo(symbol, today):
     raise last
 
 
-def mk_naver_gov3y(today, pages=4):
-    """네이버 금융 '국고채 3년' 일별 시세(표를 읽습니다)."""
+def mk_stooq(symbol, start, today):
+    """스투크 일별 종가 {날짜: 값}(CSV). 키 필요 없음."""
+    from urllib.parse import quote
+    raw = mk_get(f"https://stooq.com/q/d/l/?s={quote(symbol)}&d1={start.replace('-', '')}&d2={today.replace('-', '')}&i=d")
     out = {}
-    pat = re.compile(r'class="date"[^>]*>\s*(\d{4})\.(\d{2})\.(\d{2})\s*</td>\s*<td[^>]*>\s*([\d,]+\.\d+)')
-    for p in range(1, pages + 1):
-        html = mk_get(f"https://finance.naver.com/marketindex/interestDailyQuote.naver?"
-                      f"marketindexCd=IRR_GOVT03Y&page={p}", encoding="cp949")
-        found = pat.findall(html)
-        if not found:
-            break
-        for y, m, d, v in found:
-            day = f"{y}-{m}-{d}"
-            if day < today:
-                out[day] = float(v.replace(",", ""))
+    for line in raw.splitlines()[1:]:
+        parts = line.strip().split(",")
+        if len(parts) >= 5 and re.match(r"\d{4}-\d{2}-\d{2}$", parts[0]) and parts[0] < today:
+            try:
+                out[parts[0]] = float(parts[4])
+            except ValueError:
+                pass
     if not out:
-        raise ValueError("표를 읽지 못함")
+        raise ValueError("값이 비어 있음: " + raw[:60].replace("\n", " "))
+    return out
+
+
+def mk_frankfurter(start, today):
+    """유럽중앙은행 기준 원/달러(프랑크푸르터). 키 필요 없음."""
+    raw = mk_get(f"https://api.frankfurter.dev/v1/{start}..{today}?base=USD&symbols=KRW")
+    rates = json.loads(raw)["rates"]
+    out = {d: float(v["KRW"]) for d, v in rates.items() if d < today and "KRW" in v}
+    if not out:
+        raise ValueError("값이 비어 있음")
     return out
 
 
 def mk_ecos(stat, item, start, end):
     """한국은행 ECOS 일별 통계 {날짜: 값}. 키가 필요합니다."""
+    if not ECOS_KEY:
+        raise ValueError("ECOS_API_KEY 없음")
     url = (f"https://ecos.bok.or.kr/api/StatisticSearch/{ECOS_KEY}/json/kr/1/1000/{stat}/D/"
            f"{start.replace('-', '')}/{end.replace('-', '')}/{item}")
-    rows = json.loads(mk_get(url))["StatisticSearch"]["row"]
+    obj = json.loads(mk_get(url))
+    if "StatisticSearch" not in obj:
+        raise ValueError("ECOS 응답: " + json.dumps(obj, ensure_ascii=False)[:100])
     out = {}
-    for r in rows:
+    for r in obj["StatisticSearch"]["row"]:
         t = r["TIME"]
-        out[f"{t[:4]}-{t[4:6]}-{t[6:8]}"] = float(r["DATA_VALUE"])
+        try:
+            out[f"{t[:4]}-{t[4:6]}-{t[6:8]}"] = float(r["DATA_VALUE"].replace(",", ""))
+        except ValueError:
+            pass
     if not out:
         raise ValueError("값이 비어 있음")
     return out
@@ -1596,7 +1620,7 @@ def mk_ecos(stat, item, start, end):
 
 def mk_fred(series_id, start):
     """미국 연준(FRED) 일별 값 {날짜: 값}. 키 필요 없음."""
-    raw = mk_get(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}&cosd={start}")
+    raw = mk_get(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}&cosd={start}", timeout=45)
     out = {}
     for line in raw.splitlines()[1:]:
         parts = line.strip().split(",")
@@ -1640,52 +1664,53 @@ def save_market(d):
 
 
 def market_update(now):
-    """오늘의 값을 가져와 market/history.json에 합칩니다. 실패한 지표는 건너뛰고 이유를 로그에 적습니다."""
+    """오늘의 값을 가져와 market/history.json에 합칩니다. 지표마다 출처를 차례로 시도하고, 실패 이유를 로그에 적습니다."""
+    import time
     today = now.strftime("%Y-%m-%d")
+    start60 = (now - timedelta(days=70)).strftime("%Y-%m-%d")
     hist = load_market()
     ok, bad = [], []
 
-    def put(key, series):
-        s = hist["series"].setdefault(key, {})
-        s.update({k: round(v, 4) for k, v in series.items()})
-        cut = (now - timedelta(days=MARKET_KEEP_DAYS)).strftime("%Y-%m-%d")
-        for k in [k for k in s if k < cut]:
-            del s[k]
+    def tenth(s):    # 야후 ^TNX가 금리의 10배로 올 때를 대비합니다.
+        return {k: v / 10 for k, v in s.items()} if s and max(s.values()) > 20 else s
 
-    def attempt(key, fn):
-        try:
-            put(key, fn())
-            ok.append(key)
-        except Exception as e:   # noqa
+    def pre(fn):     # 하루 전까지만, 오늘 값은 뺍니다.
+        return lambda: {k: v for k, v in fn().items() if k < today}
+
+    # 지표별 출처 순서: (이름, 가져오는 함수)
+    chains = {
+        "usdkrw": [("야후", lambda: mk_yahoo("KRW=X", today)), ("ECOS", pre(lambda: mk_ecos("731Y001", "0000001", start60, today))),
+                   ("프랑크푸르터", lambda: mk_frankfurter(start60, today)), ("스투크", lambda: mk_stooq("usdkrw", start60, today))],
+        "gold": [("야후", lambda: mk_yahoo("GC=F", today)), ("스투크", lambda: mk_stooq("xauusd", start60, today))],
+        "wti": [("야후", lambda: mk_yahoo("CL=F", today)), ("스투크", lambda: mk_stooq("cl.f", start60, today)),
+                ("FRED", pre(lambda: mk_fred("DCOILWTICO", start60)))],
+        "kospi": [("ECOS", pre(lambda: mk_ecos("802Y001", "0001000", start60, today))), ("야후", lambda: mk_yahoo("^KS11", today)),
+                  ("스투크", lambda: mk_stooq("^kospi", start60, today))],
+        "spx": [("야후", lambda: mk_yahoo("^GSPC", today)), ("스투크", lambda: mk_stooq("^spx", start60, today)),
+                ("FRED", pre(lambda: mk_fred("SP500", start60)))],
+        "ust10": [("야후", lambda: tenth(mk_yahoo("^TNX", today))), ("스투크", lambda: mk_stooq("10usy.b", start60, today)),
+                  ("FRED", pre(lambda: mk_fred("DGS10", start60)))],
+        "kr3y": [("ECOS", pre(lambda: mk_ecos("817Y002", "010200000", start60, today)))],
+    }
+    for key, chain in chains.items():
+        reasons = []
+        for label, fn in chain:
+            try:
+                series = fn()
+                s = hist["series"].setdefault(key, {})
+                s.update({k: round(v, 4) for k, v in series.items()})
+                cut = (now - timedelta(days=MARKET_KEEP_DAYS)).strftime("%Y-%m-%d")
+                for k in [k for k in s if k < cut]:
+                    del s[k]
+                ok.append(key)
+                print(f"[시장] {key} ← {label} 성공({len(series)}일, 마지막 {max(series)})")
+                break
+            except Exception as e:   # noqa
+                reasons.append(f"{label}: {type(e).__name__} {str(e)[:70]}")
+        else:
             bad.append(key)
-            print(f"[시장] {key} 실패: {type(e).__name__} {str(e)[:120]}")
-
-    for key, sym in MARKET_YAHOO.items():
-        if key == "ust10":
-            continue
-        attempt(key, lambda sym=sym: mk_yahoo(sym, today))
-
-    def ust10():
-        try:
-            s = mk_yahoo(MARKET_YAHOO["ust10"], today)
-            if max(s.values()) > 20:      # 예전 방식(금리의 10배)으로 오면 나눕니다.
-                s = {k: v / 10 for k, v in s.items()}
-            return s
-        except Exception:
-            start = (now - timedelta(days=70)).strftime("%Y-%m-%d")
-            return {k: v for k, v in mk_fred("DGS10", start).items() if k < today}
-    attempt("ust10", ust10)
-
-    def kr3y():
-        try:
-            return mk_naver_gov3y(today)
-        except Exception as e:
-            if not ECOS_KEY:
-                raise
-            print(f"[시장] 네이버 국고채 실패({e}), ECOS로 다시 시도")
-            start = (now - timedelta(days=70)).strftime("%Y-%m-%d")
-            return {k: v for k, v in mk_ecos("817Y002", "010200000", start, today).items() if k < today}
-    attempt("kr3y", kr3y)
+            print(f"[시장] {key} 실패 — " + " / ".join(reasons))
+        time.sleep(0.7)
 
     # 기준금리: 값과 '그 값이 된 날짜'를 저장합니다.
     start = "2023-01-01"
@@ -1694,14 +1719,16 @@ def market_update(now):
         lo = mk_fred("DFEDTARL", start)
         hist["base"]["us"] = {"lo": lo[max(lo)], "hi": up[max(up)], "since": mk_last_change(up)}
         ok.append("us_base")
+        print(f"[시장] us_base ← FRED 성공 ({lo[max(lo)]}~{up[max(up)]})")
     except Exception as e:   # noqa
         bad.append("us_base")
-        print(f"[시장] us_base 실패: {type(e).__name__} {str(e)[:120]}")
+        print(f"[시장] us_base 실패 — FRED: {type(e).__name__} {str(e)[:70]}")
     try:
         if ECOS_KEY:
             s = mk_ecos("722Y001", "0101000", start, today)
             hist["base"]["kr"] = {"value": s[max(s)], "since": mk_last_change(s)}
             ok.append("kr_base")
+            print(f"[시장] kr_base ← ECOS 성공 ({s[max(s)]})")
         elif KR_BASE_RATE_MANUAL:
             v, since = KR_BASE_RATE_MANUAL
             hist["base"]["kr"] = {"value": float(v), "since": since}
@@ -1710,7 +1737,9 @@ def market_update(now):
             print("[시장] 한국 기준금리: ECOS_API_KEY도 KR_BASE_RATE_MANUAL도 없어 줄을 숨깁니다.")
     except Exception as e:   # noqa
         bad.append("kr_base")
-        print(f"[시장] kr_base 실패: {type(e).__name__} {str(e)[:120]}")
+        print(f"[시장] kr_base 실패 — ECOS: {type(e).__name__} {str(e)[:70]}")
+    if not ECOS_KEY:
+        print("[시장] 안내: ECOS_API_KEY가 없어 국고채 3년·한국 기준금리 줄은 나오지 않고, 원/달러·코스피는 다른 출처로만 시도했습니다.")
 
     save_market(hist)
     print(f"[시장] 가져옴 {len(ok)}개({', '.join(ok) or '-'}), 실패 {len(bad)}개({', '.join(bad) or '-'})")
