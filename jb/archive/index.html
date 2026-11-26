@@ -18,6 +18,8 @@
   --line: #e5e8eb;
   --accent: #1b64da;
   --blue: #1b64da;
+  --up: #d92d20;
+  --down: #1b64da;
   --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
@@ -33,6 +35,8 @@
     --line: #333333;
     --accent: #ffffff;
     --blue: #ffffff;
+    --up: #ff6b5e;
+    --down: #6ea8ff;
     --mark: #4a4a4a;
   }
 }
@@ -82,6 +86,38 @@ body {
 .menu a[aria-current="page"] { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); font-weight: 700; }
 .menu small { font-size: 12px; font-weight: 400; color: var(--muted); }
 .menu-empty { margin: 6px 14px; font-size: 13px; color: var(--muted); }
+.mk { margin-top: 12px; background: var(--surface); border-radius: 16px; padding: 6px 8px 8px; font-size: 13px; }
+.mk > summary { list-style: none; }
+.mk > summary::-webkit-details-marker { display: none; }
+.mk-head { display: flex; justify-content: space-between; align-items: center; min-height: 34px; padding: 0 6px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; }
+.mk-head::after { content: "▾"; font-size: 10px; color: var(--muted); font-weight: 400; }
+.mk:not([open]) > .mk-head::after { content: "▸"; }
+.mk-sec > summary { list-style: none; display: flex; justify-content: space-between; align-items: center; min-height: 30px; margin: 2px 4px 0; padding: 4px 0 0; border-top: 1px solid var(--line); font-size: 12px; font-weight: 700; color: var(--blue); cursor: pointer; }
+.mk-sec:first-of-type > summary { border-top: 0; }
+.mk-sec > summary::-webkit-details-marker { display: none; }
+.mk-sec > summary::after { content: "▾"; font-size: 9px; color: var(--muted); font-weight: 400; }
+.mk-sec:not([open]) > summary::after { content: "▸"; }
+.mk-item > summary { list-style: none; cursor: pointer; }
+.mk-item > summary::-webkit-details-marker { display: none; }
+.mk-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; min-height: 34px; padding: 0 4px; border-radius: 8px; white-space: nowrap; }
+.mk-item > summary:hover { background: var(--tint); }
+.mk-item[open] > summary { background: var(--tint); }
+.mk-name { display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--text2); }
+.mk-name i { display: inline-block; width: 7px; font-style: normal; font-size: 9px; color: var(--muted); }
+.mk-item > summary .mk-name i::before { content: "▸"; }
+.mk-item[open] > summary .mk-name i::before { content: "▾"; }
+.mk-val { display: flex; align-items: baseline; gap: 6px; }
+.mk-val b { font-size: 13px; font-weight: 700; color: var(--fg); }
+.mk-val small { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.mk-row > .mk-val small:not([class]) { font-size: 10.5px; font-weight: 500; }
+.mk .up { color: var(--up); }
+.mk .down { color: var(--down); }
+.mk .flat { color: var(--muted); }
+.mk-graph { padding: 8px 6px 10px; background: var(--tint); border-radius: 0 0 8px 8px; margin-top: -2px; }
+.mk-svg { display: block; width: 100%; height: 70px; }
+.mk-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.mk-sum { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.mk-wait { margin: 0; font-size: 12px; color: var(--muted); }
 h2.sec { margin: 14px 0 0; padding: 0 4px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--fg); }
 h2.sec:first-child { margin-top: 0; }
 .mynote.todo { border: 1px dashed var(--line); background: transparent; }
@@ -188,6 +224,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
     <aside class="side">
       <p class="brand"><a href="../../index.html"><span>경제</span> 뉴스 브리핑 및 분석</a></p>
 <details class="menu" id="menu" open><summary class="menu-bar"><span>경제 뉴스 브리핑·분석</span><span class="btn">메뉴</span></summary><div class="menu-body"><details class="grp"><summary>주요 경제 뉴스</summary><ul><li><a href="../../index.html">오늘의 뉴스</a></li><li><details class="sub"><summary>지난 뉴스 보기</summary><div class="tree"><a href="../../archive/index.html">전체 목록</a><details class="yr"><summary>2026년</summary><div class="months"><a href="../../archive/month/2026-11.html"><span>11월</span><small>3일</small></a></div></details></div></details></li></ul></details><details class="grp" open><summary>전북 경제 뉴스</summary><ul><li><a href="../../jb/index.html">오늘의 뉴스</a></li><li><details class="sub" open><summary>지난 뉴스 보기</summary><div class="tree"><a href="../../jb/archive/index.html" aria-current="page">전체 목록</a><details class="yr"><summary>2026년</summary><div class="months"><a href="../../jb/month/2026-11.html"><span>11월</span><small>2일</small></a></div></details></div></details></li></ul></details><details class="grp"><summary>나의 월간 분석</summary><ul><li><a href="../../analysis/economy.html">경제 분석</a></li><li><a href="../../analysis/local.html">지역 경제 분석</a></li></ul></details></div></details>
+
     </aside>
     <div class="wrap">
       <header class="head">
@@ -196,7 +233,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
         <p class="lede">날짜를 누르면 그날의 기사를 다시 볼 수 있습니다.</p>
         <nav class="nav"></nav>
       </header>
-  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="전북은행 관련" aria-pressed="false">전북은행 관련 1</button><button type="button" data-tag="지역경제" aria-pressed="false">지역경제 6</button><button type="button" data-tag="지역 산업" aria-pressed="false">지역 산업 4</button><button type="button" data-tag="금융" aria-pressed="false">금융 3</button></div>
+  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="전북은행 관련" aria-pressed="false">전북은행 관련 2</button><button type="button" data-tag="지역경제" aria-pressed="false">지역경제 6</button><button type="button" data-tag="지역 산업" aria-pressed="false">지역 산업 4</button><button type="button" data-tag="금융" aria-pressed="false">금융 4</button></div>
       <main class="sheet">
 
     <h2 class="month">2026년 11월<a href="../month/2026-11.html">월별 정리 →</a></h2>
@@ -205,6 +242,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
         <li data-tags="지역경제|금융"><a href="2026-11-26.html">전주에 문 연 키움투자자산운용의 전북 거점</a> <span class="chip-tag">지역경제</span> <span class="chip-tag">금융</span></li>
         <li data-tags="지역경제|지역 산업"><a href="2026-11-26.html">정읍 초고압 변전 실습설비 준공과 전문인력 양성 확대</a> <span class="chip-tag">지역경제</span> <span class="chip-tag">지역 산업</span></li>
         <li data-tags="지역경제|금융"><a href="2026-11-26.html">전북, 제3금융중심지 지정 위한 현장 실사 대비 총력</a> <span class="chip-tag">지역경제</span> <span class="chip-tag">금융</span></li>
+        <li data-tags="전북은행 관련|금융"><a href="2026-11-26.html">전북은행·무주경찰, 2천만원 보이스피싱 피해 예방</a> <span class="chip-tag">전북은행 관련</span> <span class="chip-tag">금융</span></li>
       </ul></section>
     <section class="day"><h3><a href="2026-11-25.html">2026.11.25 (수)</a></h3>
       <ul>

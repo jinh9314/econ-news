@@ -18,6 +18,8 @@
   --line: #e5e8eb;
   --accent: #1b64da;
   --blue: #1b64da;
+  --up: #d92d20;
+  --down: #1b64da;
   --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
@@ -33,6 +35,8 @@
     --line: #333333;
     --accent: #ffffff;
     --blue: #ffffff;
+    --up: #ff6b5e;
+    --down: #6ea8ff;
     --mark: #4a4a4a;
   }
 }
@@ -82,6 +86,38 @@ body {
 .menu a[aria-current="page"] { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); font-weight: 700; }
 .menu small { font-size: 12px; font-weight: 400; color: var(--muted); }
 .menu-empty { margin: 6px 14px; font-size: 13px; color: var(--muted); }
+.mk { margin-top: 12px; background: var(--surface); border-radius: 16px; padding: 6px 8px 8px; font-size: 13px; }
+.mk > summary { list-style: none; }
+.mk > summary::-webkit-details-marker { display: none; }
+.mk-head { display: flex; justify-content: space-between; align-items: center; min-height: 34px; padding: 0 6px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; }
+.mk-head::after { content: "▾"; font-size: 10px; color: var(--muted); font-weight: 400; }
+.mk:not([open]) > .mk-head::after { content: "▸"; }
+.mk-sec > summary { list-style: none; display: flex; justify-content: space-between; align-items: center; min-height: 30px; margin: 2px 4px 0; padding: 4px 0 0; border-top: 1px solid var(--line); font-size: 12px; font-weight: 700; color: var(--blue); cursor: pointer; }
+.mk-sec:first-of-type > summary { border-top: 0; }
+.mk-sec > summary::-webkit-details-marker { display: none; }
+.mk-sec > summary::after { content: "▾"; font-size: 9px; color: var(--muted); font-weight: 400; }
+.mk-sec:not([open]) > summary::after { content: "▸"; }
+.mk-item > summary { list-style: none; cursor: pointer; }
+.mk-item > summary::-webkit-details-marker { display: none; }
+.mk-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; min-height: 34px; padding: 0 4px; border-radius: 8px; white-space: nowrap; }
+.mk-item > summary:hover { background: var(--tint); }
+.mk-item[open] > summary { background: var(--tint); }
+.mk-name { display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--text2); }
+.mk-name i { display: inline-block; width: 7px; font-style: normal; font-size: 9px; color: var(--muted); }
+.mk-item > summary .mk-name i::before { content: "▸"; }
+.mk-item[open] > summary .mk-name i::before { content: "▾"; }
+.mk-val { display: flex; align-items: baseline; gap: 6px; }
+.mk-val b { font-size: 13px; font-weight: 700; color: var(--fg); }
+.mk-val small { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.mk-row > .mk-val small:not([class]) { font-size: 10.5px; font-weight: 500; }
+.mk .up { color: var(--up); }
+.mk .down { color: var(--down); }
+.mk .flat { color: var(--muted); }
+.mk-graph { padding: 8px 6px 10px; background: var(--tint); border-radius: 0 0 8px 8px; margin-top: -2px; }
+.mk-svg { display: block; width: 100%; height: 70px; }
+.mk-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.mk-sum { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.mk-wait { margin: 0; font-size: 12px; color: var(--muted); }
 h2.sec { margin: 14px 0 0; padding: 0 4px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--fg); }
 h2.sec:first-child { margin-top: 0; }
 .mynote.todo { border: 1px dashed var(--line); background: transparent; }
@@ -188,15 +224,16 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
     <aside class="side">
       <p class="brand"><a href="../index.html"><span>경제</span> 뉴스 브리핑 및 분석</a></p>
 <details class="menu" id="menu" open><summary class="menu-bar"><span>경제 뉴스 브리핑·분석</span><span class="btn">메뉴</span></summary><div class="menu-body"><details class="grp"><summary>주요 경제 뉴스</summary><ul><li><a href="../index.html">오늘의 뉴스</a></li><li><details class="sub"><summary>지난 뉴스 보기</summary><div class="tree"><a href="../archive/index.html">전체 목록</a><details class="yr"><summary>2026년</summary><div class="months"><a href="../archive/month/2026-11.html"><span>11월</span><small>3일</small></a></div></details></div></details></li></ul></details><details class="grp" open><summary>전북 경제 뉴스</summary><ul><li><a href="../jb/index.html" aria-current="page">오늘의 뉴스</a></li><li><details class="sub"><summary>지난 뉴스 보기</summary><div class="tree"><a href="../jb/archive/index.html">전체 목록</a><details class="yr"><summary>2026년</summary><div class="months"><a href="../jb/month/2026-11.html"><span>11월</span><small>2일</small></a></div></details></div></details></li></ul></details><details class="grp"><summary>나의 월간 분석</summary><ul><li><a href="../analysis/economy.html">경제 분석</a></li><li><a href="../analysis/local.html">지역 경제 분석</a></li></ul></details></div></details>
+
     </aside>
     <div class="wrap">
       <header class="head">
         <p class="date">최근 소식 2026.11.26 (목)</p>
         <h1>전북 경제 뉴스</h1>
         <p class="lede">전북 지역경제 기사를 3건, 전북은행·JB금융 기사를 한 건 골라 정리합니다.</p>
-        <nav class="nav"></nav>
+        <nav class="nav"><a href="#bank">전북은행·JB금융 소식 ↓</a></nav>
       </header>
-  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="지역경제" aria-pressed="false">지역경제</button><button type="button" data-tag="지역 산업" aria-pressed="false">지역 산업</button><button type="button" data-tag="금융" aria-pressed="false">금융</button></div>
+  <div class="filter" role="group" aria-label="분야 고르기"><button type="button" data-tag="" aria-pressed="true">전체</button><button type="button" data-tag="전북은행 관련" aria-pressed="false">전북은행 관련</button><button type="button" data-tag="지역경제" aria-pressed="false">지역경제</button><button type="button" data-tag="지역 산업" aria-pressed="false">지역 산업</button><button type="button" data-tag="금융" aria-pressed="false">금융</button></div>
       <main class="sheet">
 
     <h2 class="sec" id="local">전북 지역경제</h2>
@@ -257,7 +294,19 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
       </div>
     </article>
     <h2 class="sec" id="bank">전북은행·JB금융</h2>
-    <p class="empty">오늘은 관련 기사가 없습니다.</p>
+    <article class="story solo" data-tags="전북은행 관련|금융">
+      <div class="main">
+        <div class="meta"><span class="tag">전북도민일보</span><span class="chip-tag">전북은행 관련</span><span class="chip-tag">금융</span><span class="when"></span></div>
+        <h2>전북은행·무주경찰, 2천만원 보이스피싱 피해 예방</h2>
+        <ul class="pts">
+          <li>전북은행은 보이스피싱 의심거래를 미리 알아채 무주경찰서와 협력한 끝에 2천만원 규모의 금융사기 피해를 막았다고 26일 밝혔다.</li>
+          <li>지난 8월 JB햇살론15와 JB햇살론 특례보증 이용 고객들은 전북은행 직원을 사칭한 사기범에게서 기존 대출을 갚으면 추가 대출이 가능하다는 문자와 전화를 받고 송금을 유도당했다.</li>
+          <li>전북은행 직원은 송금 과정에서 이상 징후를 감지해 문자와 통화 내용을 확인한 뒤 즉시 경찰에 신고했고, 무주경찰서 수사관이 신속히 현장에 출동했다.</li>
+        </ul>
+        <div class="why"><p class="why-h">왜 중요할까요?</p><p>보이스피싱은 피해자가 직접 돈을 보내도록 속이는 수법이어서 한 번 송금되면 되찾기 어렵습니다. 따라서 대출 상환이나 추가 대출을 내세우는 문자와 전화를 받은 전북 주민들은 송금 전에 반드시 금융기관에 직접 확인해야 합니다.</p></div>
+        <p class="src">전북도민일보 기사를 참고해 AI가 새로 쓴 요약입니다. 틀린 내용이 있을 수 있으니 <a href="http://www.domin.co.kr/news/articleView.html?idxno=1577053" target="_blank" rel="noopener">원문</a>을 확인하세요.</p>
+      </div>
+    </article>
       </main>
       <p class="foot">'AI가 새로 쓴 요약'이라고 표시된 기사의 헤드라인과 요약, 해설은 AI가 언론사 기사를 참고해 사실만 새로 쓴 것이라 틀린 내용이 있을 수 있습니다. 중요한 내용은 원문으로 확인하세요. 기사의 저작권은 각 언론사에 있습니다. 이 페이지는 전북은행·JB금융그룹 등 특정 기관과 관계없는 개인 학습용 페이지이며, 금융상품을 권유하는 내용이 아닙니다. 용어 풀이는 한국은행 경제금융용어 700선의 용어를 바탕으로 쉬운 말로 새로 쓴 것이라 정확한 정의는 한국은행 자료를 확인하세요.</p>
     </div>
