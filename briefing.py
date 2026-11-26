@@ -15,7 +15,7 @@ import sys
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from html import escape, unescape
 from html.parser import HTMLParser
@@ -951,6 +951,8 @@ TEMPLATE = """<!doctype html>
   --line: #e5e8eb;
   --accent: #1b64da;
   --blue: #1b64da;
+  --up: #d92d20;
+  --down: #1b64da;
   --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
@@ -966,6 +968,8 @@ TEMPLATE = """<!doctype html>
     --line: #333333;
     --accent: #ffffff;
     --blue: #ffffff;
+    --up: #ff6b5e;
+    --down: #6ea8ff;
     --mark: #4a4a4a;
   }
 }
@@ -1015,6 +1019,38 @@ body {
 .menu a[aria-current="page"] { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); font-weight: 700; }
 .menu small { font-size: 12px; font-weight: 400; color: var(--muted); }
 .menu-empty { margin: 6px 14px; font-size: 13px; color: var(--muted); }
+.mk { margin-top: 12px; background: var(--surface); border-radius: 16px; padding: 6px 8px 8px; font-size: 13px; }
+.mk > summary { list-style: none; }
+.mk > summary::-webkit-details-marker { display: none; }
+.mk-head { display: flex; justify-content: space-between; align-items: center; min-height: 34px; padding: 0 6px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; }
+.mk-head::after { content: "▾"; font-size: 10px; color: var(--muted); font-weight: 400; }
+.mk:not([open]) > .mk-head::after { content: "▸"; }
+.mk-sec > summary { list-style: none; display: flex; justify-content: space-between; align-items: center; min-height: 30px; margin: 2px 4px 0; padding: 4px 0 0; border-top: 1px solid var(--line); font-size: 12px; font-weight: 700; color: var(--blue); cursor: pointer; }
+.mk-sec:first-of-type > summary { border-top: 0; }
+.mk-sec > summary::-webkit-details-marker { display: none; }
+.mk-sec > summary::after { content: "▾"; font-size: 9px; color: var(--muted); font-weight: 400; }
+.mk-sec:not([open]) > summary::after { content: "▸"; }
+.mk-item > summary { list-style: none; cursor: pointer; }
+.mk-item > summary::-webkit-details-marker { display: none; }
+.mk-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; min-height: 34px; padding: 0 4px; border-radius: 8px; white-space: nowrap; }
+.mk-item > summary:hover { background: var(--tint); }
+.mk-item[open] > summary { background: var(--tint); }
+.mk-name { display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--text2); }
+.mk-name i { display: inline-block; width: 7px; font-style: normal; font-size: 9px; color: var(--muted); }
+.mk-item > summary .mk-name i::before { content: "▸"; }
+.mk-item[open] > summary .mk-name i::before { content: "▾"; }
+.mk-val { display: flex; align-items: baseline; gap: 6px; }
+.mk-val b { font-size: 13px; font-weight: 700; color: var(--fg); }
+.mk-val small { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.mk-row > .mk-val small:not([class]) { font-size: 10.5px; font-weight: 500; }
+.mk .up { color: var(--up); }
+.mk .down { color: var(--down); }
+.mk .flat { color: var(--muted); }
+.mk-graph { padding: 8px 6px 10px; background: var(--tint); border-radius: 0 0 8px 8px; margin-top: -2px; }
+.mk-svg { display: block; width: 100%; height: 70px; }
+.mk-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.mk-sum { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.mk-wait { margin: 0; font-size: 12px; color: var(--muted); }
 h2.sec { margin: 14px 0 0; padding: 0 4px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--fg); }
 h2.sec:first-child { margin-top: 0; }
 .mynote.todo { border: 1px dashed var(--line); background: transparent; }
@@ -1121,6 +1157,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
     <aside class="side">
       <p class="brand"><a href="__HOME__"><span>경제</span> 뉴스 브리핑 및 분석</a></p>
 __MENU__
+__MARKET__
     </aside>
     <div class="wrap">
       <header class="head">
@@ -1278,12 +1315,12 @@ def page_html(records, title, date_label, nav, stories=None, lede=None, site=Non
     note = AI_NOTE if (site["always_note"] or any(r.get("ai") for r in records)) else ""
     foot = (note + " " if note else "") + site["foot"]
     full_title = title if BRAND in title else f"{title} · {BRAND}"
-    return (TEMPLATE.replace("__MENU__", menu_html(depth, active)).replace("__HOME__", "../" * depth + "index.html")
+    return (TEMPLATE.replace("__MENU__", menu_html(depth, active)).replace("__MARKET__", MARKET_CTX["html"]).replace("__HOME__", "../" * depth + "index.html")
             .replace("__TITLE__", escape(full_title)).replace("__DESC__", escape(site["desc"]))
             .replace("__H1__", escape(site["name"])).replace("__DATE__", escape(date_label))
             .replace("__LEDE__", lede).replace("__NAV__", nav).replace("__FILTER__", filt)
             .replace("__TOP__", top).replace("__STORIES__", stories).replace("__FOOT__", foot)
-            .replace("__SCRIPT__", script + MENU_SCRIPT))
+            .replace("__SCRIPT__", script + MENU_SCRIPT + (MARKET_SCRIPT if MARKET_CTX["html"] else "")))
 
 
 # ---------- 날짜별 보관 ----------
@@ -1456,6 +1493,323 @@ NOTES_TEMPLATE = """# 나의 월간 분석 (직접 쓰는 글)
 # ## 2026-12 경제
 # 이달의 핵심 3건: ...
 """
+
+
+# ---------- 전일 시장 지표 (왼쪽 메뉴 아래 카드) ----------
+# 매일 사이트를 만들 때 전일 종가를 가져와 market/history.json에 쌓고, 최근 30일 그래프를 그립니다.
+# 어느 지표든 가져오지 못하면 그 줄만 조용히 빠지고, 나머지 페이지는 그대로 만들어집니다.
+
+MARKET_FILE = HERE / "market" / "history.json"
+MARKET_KEEP_DAYS = 400        # 보관하는 기간(일)
+MARKET_SHOW_DAYS = 30         # 그래프에 그리는 기간(일)
+MARKET_STALE_DAYS = 14        # 마지막 값이 이보다 오래됐으면 그 줄은 숨깁니다.
+ECOS_KEY = os.environ.get("ECOS_API_KEY", "").strip()   # 한국은행 ECOS 키(없어도 됩니다. 기준금리 줄에만 쓰입니다.)
+# ECOS 키가 없을 때 직접 적어 두는 한국 기준금리. 예: (2.50, "2026-10-23")  → 값, 그 값이 된 날짜. 쓰지 않으면 None.
+KR_BASE_RATE_MANUAL = None
+
+# 야후 파이낸스 기호 (키 필요 없음)
+MARKET_YAHOO = {"usdkrw": "KRW=X", "gold": "GC=F", "wti": "CL=F",
+                "kospi": "^KS11", "spx": "^GSPC", "ust10": "^TNX"}
+# 표시 정의: (키, 이름, 값 서식, 변화 방식, 소수 자릿수, 값 단위)
+#   변화 방식 "pct" = 전일 대비 %, "pp" = 전일 대비 %p(금리)
+MARKET_LAYOUT = [
+    ("국제", [("usdkrw", "원/달러", "pct", 1, "원"), ("gold", "금 (국제)", "pct", 1, "달러"),
+              ("wti", "WTI 유가", "pct", 2, "달러")]),
+    ("한국", [("kr3y", "국고채 3년", "pp", 3, "%"), ("kr_base", "기준금리", "base", 2, "%"),
+              ("kospi", "코스피", "pct", 2, "")]),
+    ("미국", [("ust10", "국채 10년", "pp", 2, "%"), ("us_base", "기준금리", "base", 2, "%"),
+              ("spx", "S&amp;P 500", "pct", 2, "")]),
+]
+
+
+def mk_get(url, encoding="utf-8", timeout=20):
+    last = None
+    for _ in range(2):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                                                                       "(KHTML, like Gecko) Chrome/120 Safari/537.36",
+                                                       "Accept": "*/*"})
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return resp.read().decode(encoding, errors="replace")
+        except Exception as e:   # noqa
+            last = e
+    raise last
+
+
+def mk_yahoo(symbol, today):
+    """야후 일별 종가 {날짜: 값}. 오늘(진행 중) 값은 빼고 전일까지만 씁니다."""
+    from urllib.parse import quote
+    last = None
+    for host in ("query1", "query2"):
+        try:
+            raw = mk_get(f"https://{host}.finance.yahoo.com/v8/finance/chart/{quote(symbol)}?range=2mo&interval=1d")
+            res = json.loads(raw)["chart"]["result"][0]
+            off = int(res.get("meta", {}).get("gmtoffset", 0))
+            closes = res["indicators"]["quote"][0]["close"]
+            out = {}
+            for ts, c in zip(res["timestamp"], closes):
+                if c is None:
+                    continue
+                day = datetime.fromtimestamp(ts + off, timezone.utc).strftime("%Y-%m-%d")
+                if day < today:
+                    out[day] = float(c)
+            if out:
+                return out
+            last = ValueError("값이 비어 있음")
+        except Exception as e:   # noqa
+            last = e
+    raise last
+
+
+def mk_naver_gov3y(today, pages=4):
+    """네이버 금융 '국고채 3년' 일별 시세(표를 읽습니다)."""
+    out = {}
+    pat = re.compile(r'class="date"[^>]*>\s*(\d{4})\.(\d{2})\.(\d{2})\s*</td>\s*<td[^>]*>\s*([\d,]+\.\d+)')
+    for p in range(1, pages + 1):
+        html = mk_get(f"https://finance.naver.com/marketindex/interestDailyQuote.naver?"
+                      f"marketindexCd=IRR_GOVT03Y&page={p}", encoding="cp949")
+        found = pat.findall(html)
+        if not found:
+            break
+        for y, m, d, v in found:
+            day = f"{y}-{m}-{d}"
+            if day < today:
+                out[day] = float(v.replace(",", ""))
+    if not out:
+        raise ValueError("표를 읽지 못함")
+    return out
+
+
+def mk_ecos(stat, item, start, end):
+    """한국은행 ECOS 일별 통계 {날짜: 값}. 키가 필요합니다."""
+    url = (f"https://ecos.bok.or.kr/api/StatisticSearch/{ECOS_KEY}/json/kr/1/1000/{stat}/D/"
+           f"{start.replace('-', '')}/{end.replace('-', '')}/{item}")
+    rows = json.loads(mk_get(url))["StatisticSearch"]["row"]
+    out = {}
+    for r in rows:
+        t = r["TIME"]
+        out[f"{t[:4]}-{t[4:6]}-{t[6:8]}"] = float(r["DATA_VALUE"])
+    if not out:
+        raise ValueError("값이 비어 있음")
+    return out
+
+
+def mk_fred(series_id, start):
+    """미국 연준(FRED) 일별 값 {날짜: 값}. 키 필요 없음."""
+    raw = mk_get(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}&cosd={start}")
+    out = {}
+    for line in raw.splitlines()[1:]:
+        parts = line.strip().split(",")
+        if len(parts) >= 2 and re.match(r"\d{4}-\d{2}-\d{2}$", parts[0]):
+            try:
+                out[parts[0]] = float(parts[1])
+            except ValueError:
+                pass   # 값이 없는 날은 '.' 입니다.
+    if not out:
+        raise ValueError("값이 비어 있음")
+    return out
+
+
+def mk_last_change(series):
+    """{날짜: 값}에서 현재 값이 된 날짜를 찾습니다(기간 안에 바뀐 적이 없으면 None)."""
+    days = sorted(series)
+    if not days:
+        return None
+    cur = series[days[-1]]
+    since = None
+    for i in range(len(days) - 1, 0, -1):
+        if abs(series[days[i - 1]] - cur) > 1e-9:
+            since = days[i]
+            break
+    return since
+
+
+def load_market():
+    try:
+        d = json.loads(MARKET_FILE.read_text(encoding="utf-8"))
+        d.setdefault("series", {})
+        d.setdefault("base", {})
+        return d
+    except Exception:
+        return {"series": {}, "base": {}}
+
+
+def save_market(d):
+    MARKET_FILE.parent.mkdir(parents=True, exist_ok=True)
+    MARKET_FILE.write_text(json.dumps(d, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+
+def market_update(now):
+    """오늘의 값을 가져와 market/history.json에 합칩니다. 실패한 지표는 건너뛰고 이유를 로그에 적습니다."""
+    today = now.strftime("%Y-%m-%d")
+    hist = load_market()
+    ok, bad = [], []
+
+    def put(key, series):
+        s = hist["series"].setdefault(key, {})
+        s.update({k: round(v, 4) for k, v in series.items()})
+        cut = (now - timedelta(days=MARKET_KEEP_DAYS)).strftime("%Y-%m-%d")
+        for k in [k for k in s if k < cut]:
+            del s[k]
+
+    def attempt(key, fn):
+        try:
+            put(key, fn())
+            ok.append(key)
+        except Exception as e:   # noqa
+            bad.append(key)
+            print(f"[시장] {key} 실패: {type(e).__name__} {str(e)[:120]}")
+
+    for key, sym in MARKET_YAHOO.items():
+        if key == "ust10":
+            continue
+        attempt(key, lambda sym=sym: mk_yahoo(sym, today))
+
+    def ust10():
+        try:
+            s = mk_yahoo(MARKET_YAHOO["ust10"], today)
+            if max(s.values()) > 20:      # 예전 방식(금리의 10배)으로 오면 나눕니다.
+                s = {k: v / 10 for k, v in s.items()}
+            return s
+        except Exception:
+            start = (now - timedelta(days=70)).strftime("%Y-%m-%d")
+            return {k: v for k, v in mk_fred("DGS10", start).items() if k < today}
+    attempt("ust10", ust10)
+
+    def kr3y():
+        try:
+            return mk_naver_gov3y(today)
+        except Exception as e:
+            if not ECOS_KEY:
+                raise
+            print(f"[시장] 네이버 국고채 실패({e}), ECOS로 다시 시도")
+            start = (now - timedelta(days=70)).strftime("%Y-%m-%d")
+            return {k: v for k, v in mk_ecos("817Y002", "010200000", start, today).items() if k < today}
+    attempt("kr3y", kr3y)
+
+    # 기준금리: 값과 '그 값이 된 날짜'를 저장합니다.
+    start = "2023-01-01"
+    try:
+        up = mk_fred("DFEDTARU", start)
+        lo = mk_fred("DFEDTARL", start)
+        hist["base"]["us"] = {"lo": lo[max(lo)], "hi": up[max(up)], "since": mk_last_change(up)}
+        ok.append("us_base")
+    except Exception as e:   # noqa
+        bad.append("us_base")
+        print(f"[시장] us_base 실패: {type(e).__name__} {str(e)[:120]}")
+    try:
+        if ECOS_KEY:
+            s = mk_ecos("722Y001", "0101000", start, today)
+            hist["base"]["kr"] = {"value": s[max(s)], "since": mk_last_change(s)}
+            ok.append("kr_base")
+        elif KR_BASE_RATE_MANUAL:
+            v, since = KR_BASE_RATE_MANUAL
+            hist["base"]["kr"] = {"value": float(v), "since": since}
+            ok.append("kr_base")
+        else:
+            print("[시장] 한국 기준금리: ECOS_API_KEY도 KR_BASE_RATE_MANUAL도 없어 줄을 숨깁니다.")
+    except Exception as e:   # noqa
+        bad.append("kr_base")
+        print(f"[시장] kr_base 실패: {type(e).__name__} {str(e)[:120]}")
+
+    save_market(hist)
+    print(f"[시장] 가져옴 {len(ok)}개({', '.join(ok) or '-'}), 실패 {len(bad)}개({', '.join(bad) or '-'})")
+
+
+def mk_fmt(v, dec):
+    return f"{v:,.{dec}f}"
+
+
+def mk_change(cur, prev, kind, dec):
+    """(화살표 글, 색 클래스) — 한국식: 오르면 빨강, 내리면 파랑."""
+    if kind == "pp":
+        diff = cur - prev
+        txt = f"{abs(diff):.{dec}f}%p"
+        flat = abs(diff) < 0.5 * 10 ** -dec
+    else:
+        diff = (cur - prev) / prev * 100 if prev else 0.0
+        txt = f"{abs(diff):.2f}%"
+        flat = abs(diff) < 0.005
+    if flat:
+        return f"– {txt}", "flat"
+    return (f"▲ {txt}" if diff > 0 else f"▼ {txt}"), ("up" if diff > 0 else "down")
+
+
+def mk_graph(points, kind, dec):
+    """점 목록 [(날짜, 값)]으로 선 그래프와 요약을 만듭니다."""
+    if len(points) < 2:
+        return f'<p class="mk-wait">값을 쌓는 중입니다 ({len(points)}일)</p>'
+    vals = [v for _, v in points]
+    lo, hi = min(vals), max(vals)
+    span = (hi - lo) or 1.0
+    n = len(vals)
+    pts = " ".join(f"{i * 203 / (n - 1):.1f},{36 - (v - lo) / span * 32:.1f}" for i, v in enumerate(vals))
+    first, last = vals[0], vals[-1]
+    gap = (datetime.strptime(points[-1][0], "%Y-%m-%d") - datetime.strptime(points[0][0], "%Y-%m-%d")).days
+    txt, cls = mk_change(last, first, kind, dec)
+    return (f'<svg class="mk-svg {cls}" viewBox="0 0 203 40" preserveAspectRatio="none" aria-hidden="true">'
+            f'<polyline points="{pts}" fill="none" stroke="currentColor" stroke-width="1.8" '
+            f'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>'
+            f'<div class="mk-axis"><span>{points[0][0][5:].replace("-", ".")}</span>'
+            f'<span>최고 {mk_fmt(hi, dec)} · 최저 {mk_fmt(lo, dec)}</span><span>{points[-1][0][5:].replace("-", ".")}</span></div>'
+            f'<div class="mk-sum">{gap}일 전 대비 <b class="{cls}">{txt}</b></div>')
+
+
+def market_html(now=None):
+    """저장된 값으로 카드 HTML을 만듭니다. 보여 줄 것이 없으면 빈 글자를 돌려줍니다."""
+    hist = load_market()
+    today = (now or datetime.now(KST)).strftime("%Y-%m-%d")
+    stale_cut = ((now or datetime.now(KST)) - timedelta(days=MARKET_STALE_DAYS)).strftime("%Y-%m-%d")
+    secs = []
+    for title, rows in MARKET_LAYOUT:
+        out = []
+        for key, name, kind, dec, unit in rows:
+            if kind == "base":
+                b = hist["base"].get("us" if key == "us_base" else "kr")
+                if not b:
+                    continue
+                if key == "us_base":
+                    val = f"{b['lo']:.2f}~{b['hi']:.2f}%"
+                else:
+                    val = f"{b['value']:.2f}%"
+                since = b.get("since")
+                note = (since.replace("-", ".") + " 기준") if since else ""
+                out.append(f'<div class="mk-row"><span class="mk-name"><i></i>{name}</span>'
+                           f'<span class="mk-val"><b>{val}</b><small>{note}</small></span></div>')
+                continue
+            s = hist["series"].get(key) or {}
+            days = sorted(d for d in s if d < today)
+            if not days or days[-1] < stale_cut:
+                continue
+            cur = s[days[-1]]
+            prev = s[days[-2]] if len(days) > 1 else cur
+            txt, cls = mk_change(cur, prev, kind, dec)
+            cut = (datetime.strptime(days[-1], "%Y-%m-%d") - timedelta(days=MARKET_SHOW_DAYS)).strftime("%Y-%m-%d")
+            pts = [(d, s[d]) for d in days if d >= cut]
+            val = f"{mk_fmt(cur, dec)}{unit}"
+            out.append(f'<details class="mk-item"><summary class="mk-row"><span class="mk-name"><i></i>{name}</span>'
+                       f'<span class="mk-val"><b>{val}</b><small class="{cls}">{txt}</small></span></summary>'
+                       f'<div class="mk-graph">{mk_graph(pts, kind, dec)}</div></details>')
+        if out:
+            secs.append(f'<details class="mk-sec" open><summary>{title}</summary>{"".join(out)}</details>')
+    if not secs:
+        return ""
+    return ('<details class="mk" id="mk" open><summary class="mk-head"><span>전일 시장 지표</span></summary>'
+            + "".join(secs) + '</details>')
+
+
+MARKET_CTX = {"html": ""}
+
+MARKET_SCRIPT = """<script>
+(function () {
+  var mk = document.getElementById("mk");
+  if (!mk) return;
+  // 휴대폰(좁은 화면)에서는 카드를 접어 두고, 컴퓨터에서는 펼쳐 둡니다.
+  var wide = window.matchMedia("(min-width: 861px)");
+  mk.open = wide.matches;
+  if (wide.addEventListener) wide.addEventListener("change", function () { mk.open = wide.matches; });
+})();
+</script>"""
 
 
 # ---------- 왼쪽 메뉴 ----------
@@ -1842,6 +2196,19 @@ def main():
             import traceback
             print(f"[전북 오류] {e}")
             traceback.print_exc()
+
+    if not rebuild_only:
+        try:
+            market_update(now)
+        except Exception as e:
+            import traceback
+            print(f"[시장 오류] {e}")
+            traceback.print_exc()
+    try:
+        MARKET_CTX["html"] = market_html(now)
+    except Exception as e:
+        print(f"[시장 화면 오류] {e}")
+        MARKET_CTX["html"] = ""
 
     refresh_menu()   # 오늘 기록까지 저장된 뒤에 메뉴를 만들어야 새 날짜가 메뉴에 들어갑니다.
     if records is None:   # 다시 만들기: 가장 최근 보관본으로 첫 화면을 만듭니다.

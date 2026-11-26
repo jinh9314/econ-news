@@ -31,13 +31,15 @@ jobs:
         env:
           # 저장소 Settings → Secrets → Actions에 넣어 둔 키입니다. 없으면 AI 없이 문장 발췌 방식으로 만듭니다.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # (선택) 한국은행 ECOS 키. 있으면 한국 기준금리 줄이 자동으로 채워집니다. 없으면 그 줄만 숨겨집니다.
+          ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
         run: python briefing.py ${{ github.event_name == 'push' && '--rebuild' || '' }}
 
       - name: Commit pages
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html archive jb analysis
+          git add index.html archive jb analysis market
           git diff --cached --quiet || git commit -m "Update pages"
           git pull --rebase
           git push
