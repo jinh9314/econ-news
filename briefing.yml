@@ -22,6 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 대기하다 늦게 시작한 실행도 예전 커밋이 아니라 항상 최신 main 위에서 페이지를 만듭니다.
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
@@ -40,6 +43,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html archive jb analysis market
-          git diff --cached --quiet || git commit -m "Update pages"
-          git pull --rebase
-          git push
+          git diff --cached --quiet && exit 0
+          git commit -m "Update pages"
+          # 그사이 다른 커밋이 올라와 자동 생성 페이지가 충돌하면, 방금 만든 페이지를 우선합니다.
+          # (rebase 중의 -X theirs = 지금 다시 적용하는 이 실행의 커밋)
+          for i in 1 2 3; do
+            if git pull --rebase -X theirs && git push; then exit 0; fi
+            git rebase --abort 2>/dev/null || true
+            sleep 5
+          done
+          exit 1
